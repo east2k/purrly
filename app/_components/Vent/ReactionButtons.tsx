@@ -1,32 +1,60 @@
 "use client";
 
 import { useState } from "react";
-import type { Reactions } from "@/types";
+import { useUser } from "@clerk/nextjs";
+import { getSessionId } from "@/app/_utils/session";
 
 type ReactionButtonsProps = {
-    reactions: Reactions;
+    postId: number;
+    hugCount: number;
+    meTooCount: number;
 };
 
-const ReactionButtons = ({ reactions }: ReactionButtonsProps) => {
-    const [hugs, setHugs] = useState(reactions.hugs);
-    const [meToo, setMeToo] = useState(reactions.meToo);
+const ReactionButtons = ({ postId, hugCount, meTooCount }: ReactionButtonsProps) => {
+    const [hugs, setHugs] = useState(hugCount);
+    const [meToo, setMeToo] = useState(meTooCount);
     const [huggedByMe, setHuggedByMe] = useState(false);
     const [meTooByMe, setMeTooByMe] = useState(false);
+    const { isSignedIn } = useUser();
 
-    const toggleHug = () => {
-        setHugs(huggedByMe ? hugs - 1 : hugs + 1);
-        setHuggedByMe(!huggedByMe);
-    };
+    const toggleReaction = async (type: "HUG" | "ME_TOO") => {
+        const isHug = type === "HUG";
+        const active = isHug ? huggedByMe : meTooByMe;
 
-    const toggleMeToo = () => {
-        setMeToo(meTooByMe ? meToo - 1 : meToo + 1);
-        setMeTooByMe(!meTooByMe);
+        if (isHug) {
+            setHugs(active ? hugs - 1 : hugs + 1);
+            setHuggedByMe(!active);
+        } else {
+            setMeToo(active ? meToo - 1 : meToo + 1);
+            setMeTooByMe(!active);
+        }
+
+        const body: Record<string, string> = { type };
+        if (!isSignedIn) {
+            body.sessionId = getSessionId();
+        }
+
+        const res = await fetch(`/api/posts/${postId}/reactions`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+        });
+
+        if (!res.ok) {
+            if (isHug) {
+                setHugs(active ? hugs : hugs - 1);
+                setHuggedByMe(active);
+            } else {
+                setMeToo(active ? meToo : meToo - 1);
+                setMeTooByMe(active);
+            }
+        }
     };
 
     return (
         <div className="flex gap-2">
             <button
-                onClick={toggleHug}
+                onClick={() => toggleReaction("HUG")}
                 className={[
                     "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer border",
                     huggedByMe
@@ -37,7 +65,7 @@ const ReactionButtons = ({ reactions }: ReactionButtonsProps) => {
                 🫂 {hugs > 0 && <span>{hugs}</span>}
             </button>
             <button
-                onClick={toggleMeToo}
+                onClick={() => toggleReaction("ME_TOO")}
                 className={[
                     "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all cursor-pointer border",
                     meTooByMe

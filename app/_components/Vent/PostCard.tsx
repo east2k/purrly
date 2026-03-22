@@ -7,11 +7,10 @@ import { timeAgo } from "@/app/_utils/time";
 import ReactionButtons from "./ReactionButtons";
 import ReportButton from "../ReportButton";
 import SignupNudge from "../SignupNudge";
-import type { Post, Comment } from "@/types";
+import type { ApiPost, ApiComment } from "@/types";
 
 type PostCardProps = {
-    post: Post;
-    onAddComment: (postId: number, text: string) => void;
+    post: ApiPost;
     animationDelay?: string;
 };
 
@@ -24,22 +23,62 @@ const getDisplayName = (
     return `Purrlynonymous-${authorDisplayId}`;
 };
 
-const getCommentDisplayName = (comment: Comment) => {
+const getCommentDisplayName = (comment: ApiComment) => {
     if (comment.hideIdentity) return "Purrlynonymous";
     return `Purrlynonymous-${comment.authorDisplayId}`;
 };
 
-const PostCard = ({ post, onAddComment, animationDelay = "0s" }: PostCardProps) => {
+const PostCard = ({ post, animationDelay = "0s" }: PostCardProps) => {
     const [showComments, setShowComments] = useState(false);
+    const [comments, setComments] = useState<ApiComment[]>([]);
+    const [commentsLoaded, setCommentsLoaded] = useState(false);
     const [commentText, setCommentText] = useState("");
     const [whisperPrompt, setWhisperPrompt] = useState<number | null>(null);
+    const [localCommentCount, setLocalCommentCount] = useState(post.commentCount);
     const { isSignedIn } = useUser();
 
-    const handleComment = () => {
+    const loadComments = async () => {
+        if (commentsLoaded) return;
+        const res = await fetch(`/api/posts/${post.id}/comments`);
+        if (!res.ok) return;
+        const data: ApiComment[] = await res.json();
+        setComments(data);
+        setCommentsLoaded(true);
+    };
+
+    const handleToggleComments = () => {
+        if (!showComments) loadComments();
+        setShowComments(!showComments);
+    };
+
+    const handleComment = async () => {
         if (!commentText.trim()) return;
-        onAddComment(post.id, commentText.trim());
+        const res = await fetch(`/api/posts/${post.id}/comments`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text: commentText.trim(), hideIdentity: false }),
+        });
+        if (!res.ok) return;
+        const newComment: ApiComment = await res.json();
+        setComments((prev) => [...prev, newComment]);
+        setLocalCommentCount((prev) => prev + 1);
         setCommentText("");
     };
+
+    const handleWhisperRequest = async (targetUserId: string) => {
+        const res = await fetch("/api/whispers", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ targetUserId }),
+        });
+        if (!res.ok) {
+            const err = await res.json();
+            alert(err.error ?? "Something went wrong. Take a breath, we'll try again.");
+        }
+        setWhisperPrompt(null);
+    };
+
+    const timestamp = new Date(post.createdAt).getTime();
 
     return (
         <div
@@ -56,8 +95,8 @@ const PostCard = ({ post, onAddComment, animationDelay = "0s" }: PostCardProps) 
                     </span>
                 </div>
                 <div className="flex items-center gap-2">
-                    <span className="text-xs text-sand-500">{timeAgo(post.timestamp)}</span>
-                    <ReportButton contentType="post" contentId={post.id} />
+                    <span className="text-xs text-sand-500">{timeAgo(timestamp)}</span>
+                    <ReportButton contentType="POST" contentId={post.id} />
                 </div>
             </div>
 
@@ -65,15 +104,15 @@ const PostCard = ({ post, onAddComment, animationDelay = "0s" }: PostCardProps) 
 
             <p className="text-[15px] leading-[1.65] text-sand-900 mb-3">{post.text}</p>
 
-            <ReactionButtons reactions={post.reactions} />
+            <ReactionButtons postId={post.id} hugCount={post.hugCount} meTooCount={post.meTooCount} />
 
             <div className="border-t border-sand-300 pt-2.5 mt-3">
                 {post.commentsEnabled ? (
                     <button
                         className="text-xs text-sand-600 hover:text-terracotta-400 transition-colors bg-transparent border-none cursor-pointer py-1 font-body"
-                        onClick={() => setShowComments(!showComments)}
+                        onClick={handleToggleComments}
                     >
-                        💬 {post.comments.length > 0 ? post.comments.length : ""}{" "}
+                        💬 {localCommentCount > 0 ? localCommentCount : ""}{" "}
                         {showComments ? "Hide" : "Comments"}
                     </button>
                 ) : (
@@ -83,7 +122,7 @@ const PostCard = ({ post, onAddComment, animationDelay = "0s" }: PostCardProps) 
 
             {showComments && post.commentsEnabled && (
                 <div className="mt-3 pt-3 border-t border-dashed border-sand-300">
-                    {post.comments.map((c) => (
+                    {comments.map((c) => (
                         <div key={c.id} className="flex items-start gap-2 py-2">
                             <div className="w-6 h-6 rounded-full bg-sand-200 flex items-center justify-center shrink-0 mt-0.5">
                                 <UserRound size={13} className="text-sand-500" />
@@ -94,7 +133,7 @@ const PostCard = ({ post, onAddComment, animationDelay = "0s" }: PostCardProps) 
                                         {getCommentDisplayName(c)}
                                     </span>
                                     <span className="text-[11px] text-sand-500">
-                                        {timeAgo(c.timestamp)}
+                                        {timeAgo(new Date(c.createdAt).getTime())}
                                     </span>
                                 </div>
                                 <span className="text-sm text-sand-900">{c.text}</span>
@@ -114,10 +153,7 @@ const PostCard = ({ post, onAddComment, animationDelay = "0s" }: PostCardProps) 
                                                 <p className="text-xs text-sand-600 mb-2">Send a whisper request to this person?</p>
                                                 <div className="flex gap-2">
                                                     <button
-                                                        onClick={() => {
-                                                            console.log("Whisper request sent to:", c.authorId);
-                                                            setWhisperPrompt(null);
-                                                        }}
+                                                        onClick={() => handleWhisperRequest(c.authorId)}
                                                         className="flex-1 py-1.5 bg-terracotta-400 text-white text-xs font-medium rounded-lg hover:bg-terracotta-500 transition-colors cursor-pointer font-body"
                                                     >
                                                         Send
@@ -133,7 +169,7 @@ const PostCard = ({ post, onAddComment, animationDelay = "0s" }: PostCardProps) 
                                         )}
                                     </div>
                                 )}
-                                <ReportButton contentType="comment" contentId={c.id} />
+                                <ReportButton contentType="COMMENT" contentId={c.id} />
                             </div>
                         </div>
                     ))}

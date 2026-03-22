@@ -1,8 +1,8 @@
-import { useState, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useUser } from "@clerk/nextjs";
 import { getTimeRange } from "@/app/_utils/time";
-import { SAMPLE_POSTS, POSTS_PER_PAGE, MOCK_CURRENT_USER_ID } from "@/app/_constants";
-import type { Post, Comment } from "@/types";
+import { POSTS_PER_PAGE } from "@/app/_constants";
+import type { ApiPost } from "@/types";
 import type { TimeRange } from "@/app/_utils/time";
 
 export type FeedFilter = "recent" | "mostHugged" | "myPosts";
@@ -14,99 +14,108 @@ export const FEED_FILTER_LABELS: Record<FeedFilter, string> = {
 };
 
 const usePostFeed = () => {
-    const [posts, setPosts] = useState<Post[]>(SAMPLE_POSTS);
+    const [posts, setPosts] = useState<ApiPost[]>([]);
+    const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState<FeedFilter>("recent");
     const [timeRange, setTimeRange] = useState<TimeRange>("all");
     const [customDate, setCustomDate] = useState<string | null>(null);
-    const [visibleCount, setVisibleCount] = useState(POSTS_PER_PAGE);
-    const { isSignedIn, user } = useUser();
+    const [offset, setOffset] = useState(0);
+    const [hasMore, setHasMore] = useState(true);
+    const { isSignedIn } = useUser();
 
-    const currentUserId = user?.id ?? MOCK_CURRENT_USER_ID;
+    const fetchPosts = useCallback(async (reset: boolean, currentFilter: FeedFilter, currentTimeRange: TimeRange, currentCustomDate: string | null) => {
+        const { from, to } = getTimeRange(currentTimeRange, currentCustomDate);
+        const params = new URLSearchParams({
+            limit: String(POSTS_PER_PAGE),
+            offset: reset ? "0" : String(offset),
+            sort: currentFilter === "mostHugged" ? "mostHugged" : "recent",
+        });
 
-    const filteredPosts = useMemo(() => {
-        const { from, to } = getTimeRange(timeRange, customDate);
-        const timeFiltered = posts.filter((p) => p.timestamp >= from && p.timestamp <= to);
-
-        switch (filter) {
-            case "recent":
-                return [...timeFiltered].sort((a, b) => b.timestamp - a.timestamp);
-            case "mostHugged":
-                return [...timeFiltered].sort((a, b) =>
-                    (b.reactions.hugs + b.reactions.meToo) - (a.reactions.hugs + a.reactions.meToo),
-                );
-            case "myPosts":
-                return timeFiltered.filter((p) => p.authorId === currentUserId);
+        if (currentTimeRange !== "all") {
+            params.set("from", String(from));
+            params.set("to", String(to));
         }
-    }, [posts, filter, timeRange, customDate, currentUserId]);
 
-    const visiblePosts = filteredPosts.slice(0, visibleCount);
-    const hasMore = visibleCount < filteredPosts.length;
+        if (currentFilter === "myPosts") {
+            params.set("mine", "true");
+        }
 
-    const handlePost = (data: Omit<Post, "id" | "timestamp" | "comments" | "reactions">) => {
-        const newPost: Post = {
-            ...data,
-            id: Date.now(),
-            comments: [],
-            reactions: { hugs: 0, meToo: 0 },
-            timestamp: Date.now(),
-        };
-        setPosts([newPost, ...posts]);
+        const res = await fetch(`/api/posts?${params}`);
+        if (!res.ok) return;
+
+        const data: ApiPost[] = await res.json();
+
+        if (reset) {
+            setPosts(data);
+            setOffset(data.length);
+        } else {
+            setPosts((prev) => [...prev, ...data]);
+            setOffset((prev) => prev + data.length);
+        }
+        setHasMore(data.length >= POSTS_PER_PAGE);
+        setLoading(false);
+    }, [offset]);
+
+    useEffect(() => {
+        setLoading(true);
+        fetchPosts(true, filter, timeRange, customDate);
+    }, [filter, timeRange, customDate]);
+
+    const handlePost = async (data: {
+        text: string;
+        mood: string | null;
+        commentsEnabled: boolean;
+        hideIdentity: boolean;
+    }) => {
+        const res = await fetch("/api/posts", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+        });
+
+        if (!res.ok) return;
+
+        const newPost: ApiPost = await res.json();
+        setPosts((prev) => [newPost, ...prev]);
         setFilter("recent");
         setTimeRange("all");
         setCustomDate(null);
-        setVisibleCount(POSTS_PER_PAGE);
-    };
-
-    const handleAddComment = (postId: number, text: string) => {
-        const newComment: Comment = {
-            id: Date.now(),
-            text,
-            timestamp: Date.now(),
-            authorId: user?.id ?? "unknown",
-            authorDisplayId: "7382",
-            hideIdentity: false,
-        };
-        setPosts(
-            posts.map((p) =>
-                p.id === postId
-                    ? { ...p, comments: [...p.comments, newComment] }
-                    : p,
-            ),
-        );
     };
 
     const handleFilterChange = (f: FeedFilter) => {
         setFilter(f);
-        setVisibleCount(POSTS_PER_PAGE);
+        setOffset(0);
     };
 
     const handleTimeRangeChange = (t: TimeRange) => {
         setTimeRange(t);
         if (t !== "custom") setCustomDate(null);
-        setVisibleCount(POSTS_PER_PAGE);
+        setOffset(0);
     };
 
     const handleDatePick = (value: string) => {
         setCustomDate(value);
         setTimeRange("custom");
-        setVisibleCount(POSTS_PER_PAGE);
+        setOffset(0);
     };
 
-    const loadMore = () => setVisibleCount(visibleCount + POSTS_PER_PAGE);
+    const loadMore = () => {
+        fetchPosts(false, filter, timeRange, customDate);
+    };
 
     const availableFilters: FeedFilter[] = isSignedIn
         ? ["recent", "mostHugged", "myPosts"]
         : ["recent", "mostHugged"];
 
     return {
-        visiblePosts,
+        posts,
+        loading,
         hasMore,
         filter,
         timeRange,
         customDate,
         availableFilters,
         handlePost,
-        handleAddComment,
         handleFilterChange,
         handleTimeRangeChange,
         handleDatePick,

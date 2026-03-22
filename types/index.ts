@@ -3,21 +3,16 @@ export type MoodOption = {
     label: string;
 };
 
-export type Comment = {
+export type ApiComment = {
     id: number;
     text: string;
-    timestamp: number;
     authorId: string;
-    authorDisplayId: string;
+    authorDisplayId: string | null;
     hideIdentity: boolean;
+    createdAt: string;
 };
 
-export type Reactions = {
-    hugs: number;
-    meToo: number;
-};
-
-export type Post = {
+export type ApiPost = {
     id: number;
     text: string;
     mood: string | null;
@@ -25,9 +20,10 @@ export type Post = {
     hideIdentity: boolean;
     authorId: string | null;
     authorDisplayId: string | null;
-    comments: Comment[];
-    reactions: Reactions;
-    timestamp: number;
+    createdAt: string;
+    hugCount: number;
+    meTooCount: number;
+    commentCount: number;
 };
 
 export type SelfCareKey = "water" | "sleep";
@@ -83,7 +79,7 @@ export type ReconnectRequest = {
     createdAt: number;
 };
 
-export type ReportContentType = "post" | "comment" | "whisper_message";
+export type ReportContentType = "POST" | "COMMENT" | "WHISPER_MESSAGE";
 export type ReportStatus = "pending" | "reviewed" | "actioned";
 
 export type Report = {

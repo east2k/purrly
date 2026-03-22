@@ -3,10 +3,16 @@
 import { useState, useRef } from "react";
 import { useUser } from "@clerk/nextjs";
 import { MOOD_OPTIONS, MAX_UNSIGNED_POSTS_PER_DAY } from "@/app/_constants";
-import type { Post } from "@/types";
+
+type PostData = {
+    text: string;
+    mood: string | null;
+    commentsEnabled: boolean;
+    hideIdentity: boolean;
+};
 
 type PostComposerProps = {
-    onPost: (post: Omit<Post, "id" | "timestamp" | "comments" | "reactions">) => void;
+    onPost: (post: PostData) => void;
 };
 
 const PostComposer = ({ onPost }: PostComposerProps) => {
@@ -17,7 +23,7 @@ const PostComposer = ({ onPost }: PostComposerProps) => {
     const [showAllMoods, setShowAllMoods] = useState(false);
     const [postsToday, setPostsToday] = useState(0);
     const textRef = useRef<HTMLTextAreaElement>(null);
-    const { isSignedIn, user } = useUser();
+    const { isSignedIn } = useUser();
 
     const isRateLimited = !isSignedIn && postsToday >= MAX_UNSIGNED_POSTS_PER_DAY;
     const remainingPosts = MAX_UNSIGNED_POSTS_PER_DAY - postsToday;
@@ -31,8 +37,6 @@ const PostComposer = ({ onPost }: PostComposerProps) => {
             mood,
             commentsEnabled,
             hideIdentity: isSignedIn ? hideIdentity : true,
-            authorId: isSignedIn && user ? user.id : null,
-            authorDisplayId: isSignedIn ? "7382" : null,
         });
         setText("");
         setMood(null);

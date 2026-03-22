@@ -10,14 +10,14 @@ import { TIME_RANGE_OPTIONS, formatCustomDate } from "@/app/_utils/time";
 const VentPage = () => {
     const dateInputRef = useRef<HTMLInputElement>(null);
     const {
-        visiblePosts,
+        posts,
+        loading,
         hasMore,
         filter,
         timeRange,
         customDate,
         availableFilters,
         handlePost,
-        handleAddComment,
         handleFilterChange,
         handleTimeRangeChange,
         handleDatePick,
@@ -92,7 +92,9 @@ const VentPage = () => {
                 </div>
             </div>
 
-            {visiblePosts.length === 0 ? (
+            {loading ? (
+                <p className="text-center py-12 text-sm text-sand-500">Loading...</p>
+            ) : posts.length === 0 ? (
                 <p className="text-center py-12 text-sm text-sand-500">
                     {filter === "myPosts"
                         ? "You haven\u2019t posted anything yet. Go ahead, let it out. \ud83d\udc31"
@@ -102,11 +104,10 @@ const VentPage = () => {
                 </p>
             ) : (
                 <>
-                    {visiblePosts.map((p, i) => (
+                    {posts.map((p, i) => (
                         <PostCard
                             key={p.id}
                             post={p}
-                            onAddComment={handleAddComment}
                             animationDelay={`${i * 0.05}s`}
                         />
                     ))}

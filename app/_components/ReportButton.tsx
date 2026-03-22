@@ -14,9 +14,14 @@ const ReportButton = ({ contentType, contentId }: ReportButtonProps) => {
     const [reason, setReason] = useState("");
     const [submitted, setSubmitted] = useState(false);
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (!reason.trim()) return;
-        console.log("Report:", { contentType, contentId, reason: reason.trim() });
+        const res = await fetch("/api/reports", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ contentType, contentId, reason: reason.trim() }),
+        });
+        if (!res.ok) return;
         setSubmitted(true);
         setTimeout(() => {
             setShowForm(false);
