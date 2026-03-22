@@ -42,6 +42,7 @@ export const posts = pgTable("posts", {
     id: serial("id").primaryKey(),
     text: text("text").notNull(),
     mood: text("mood"),
+    language: text("language"),
     commentsEnabled: boolean("comments_enabled").default(true).notNull(),
     hideIdentity: boolean("hide_identity").default(true).notNull(),
     authorId: text("author_id").references(() => users.id),

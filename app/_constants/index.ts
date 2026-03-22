@@ -1,6 +1,24 @@
 import type { Whisper, WhisperMemory, SelfCareKey, SelfCareConfig, MoodOption } from "@/types";
 
 export const MAX_UNSIGNED_POSTS_PER_DAY = 3;
+
+export const LANGUAGE_OPTIONS: { code: string; label: string }[] = [
+    { code: "en", label: "English" },
+    { code: "es", label: "Español" },
+    { code: "fr", label: "Français" },
+    { code: "pt", label: "Português" },
+    { code: "de", label: "Deutsch" },
+    { code: "it", label: "Italiano" },
+    { code: "ja", label: "日本語" },
+    { code: "ko", label: "한국어" },
+    { code: "zh", label: "中文" },
+    { code: "ar", label: "العربية" },
+    { code: "hi", label: "हिन्दी" },
+    { code: "tl", label: "Filipino" },
+    { code: "id", label: "Bahasa Indonesia" },
+    { code: "th", label: "ภาษาไทย" },
+    { code: "vi", label: "Tiếng Việt" },
+];
 export const REPORT_THRESHOLD = 5;
 export const WHISPER_DURATION_MS = 48 * 60 * 60 * 1000;
 export const POSTS_PER_PAGE = 5;

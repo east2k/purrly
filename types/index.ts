@@ -17,6 +17,7 @@ export type ApiPost = {
     id: number;
     text: string;
     mood: string | null;
+    language: string | null;
     commentsEnabled: boolean;
     hideIdentity: boolean;
     authorId: string | null;

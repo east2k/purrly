@@ -22,9 +22,10 @@ const usePostFeed = () => {
     const [customDate, setCustomDate] = useState<string | null>(null);
     const [offset, setOffset] = useState(0);
     const [hasMore, setHasMore] = useState(true);
+    const [language, setLanguage] = useState("");
     const { isSignedIn } = useUser();
 
-    const fetchPosts = useCallback(async (reset: boolean, currentFilter: FeedFilter, currentTimeRange: TimeRange, currentCustomDate: string | null) => {
+    const fetchPosts = useCallback(async (reset: boolean, currentFilter: FeedFilter, currentTimeRange: TimeRange, currentCustomDate: string | null, currentLanguage: string) => {
         const { from, to } = getTimeRange(currentTimeRange, currentCustomDate);
         const params = new URLSearchParams({
             limit: String(POSTS_PER_PAGE),
@@ -39,6 +40,7 @@ const usePostFeed = () => {
 
         if (currentFilter === "myPosts") params.set("mine", "true");
         if (currentFilter === "hidden") params.set("hidden", "true");
+        if (currentLanguage) params.set("lang", currentLanguage);
 
         const res = await fetch(`/api/posts?${params}`);
         if (!res.ok) return;
@@ -60,16 +62,17 @@ const usePostFeed = () => {
         let cancelled = false;
         const run = async () => {
             setLoading(true);
-            await fetchPosts(true, filter, timeRange, customDate);
+            await fetchPosts(true, filter, timeRange, customDate, language);
             if (cancelled) return;
         };
         run();
         return () => { cancelled = true; };
-    }, [filter, timeRange, customDate]);
+    }, [filter, timeRange, customDate, language]);
 
     const handlePost = async (data: {
         text: string;
         mood: string | null;
+        language: string;
         commentsEnabled: boolean;
         hideIdentity: boolean;
     }) => {
@@ -105,8 +108,13 @@ const usePostFeed = () => {
         setOffset(0);
     };
 
+    const handleLanguageChange = (l: string) => {
+        setLanguage(l);
+        setOffset(0);
+    };
+
     const loadMore = () => {
-        fetchPosts(false, filter, timeRange, customDate);
+        fetchPosts(false, filter, timeRange, customDate, language);
     };
 
     const handleHidePost = (postId: number) => {
@@ -129,6 +137,7 @@ const usePostFeed = () => {
         filter,
         timeRange,
         customDate,
+        language,
         availableFilters,
         handlePost,
         handleHidePost,
@@ -136,6 +145,7 @@ const usePostFeed = () => {
         handleFilterChange,
         handleTimeRangeChange,
         handleDatePick,
+        handleLanguageChange,
         loadMore,
     };
 };

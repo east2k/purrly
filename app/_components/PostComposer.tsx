@@ -2,12 +2,13 @@
 
 import { useState, useRef } from "react";
 import { useUser } from "@clerk/nextjs";
-import { MOOD_OPTIONS, MAX_UNSIGNED_POSTS_PER_DAY } from "@/app/_constants";
+import { MOOD_OPTIONS, MAX_UNSIGNED_POSTS_PER_DAY, LANGUAGE_OPTIONS } from "@/app/_constants";
 import { useIdentityPreference } from "@/app/_context/IdentityPreferenceContext";
 
 type PostData = {
     text: string;
     mood: string | null;
+    language: string;
     commentsEnabled: boolean;
     hideIdentity: boolean;
 };
@@ -19,6 +20,7 @@ type PostComposerProps = {
 const PostComposer = ({ onPost }: PostComposerProps) => {
     const [text, setText] = useState("");
     const [mood, setMood] = useState<string | null>(null);
+    const [language, setLanguage] = useState("")
     const [commentsEnabled, setCommentsEnabled] = useState(true);
     const [showAllMoods, setShowAllMoods] = useState(false);
     const [postsToday, setPostsToday] = useState(0);
@@ -32,15 +34,17 @@ const PostComposer = ({ onPost }: PostComposerProps) => {
     const visibleMoods = showAllMoods ? MOOD_OPTIONS : MOOD_OPTIONS.slice(0, 6);
 
     const handleSubmit = () => {
-        if (!text.trim() || isRateLimited) return;
+        if (!text.trim() || !language || isRateLimited) return;
         onPost({
             text: text.trim(),
             mood,
+            language,
             commentsEnabled,
             hideIdentity: isSignedIn ? hideIdentity : true,
         });
         setText("");
         setMood(null);
+        setLanguage("");
         if (!isSignedIn) setPostsToday(postsToday + 1);
     };
 
@@ -53,6 +57,25 @@ const PostComposer = ({ onPost }: PostComposerProps) => {
                 <span className="text-xs text-sand-500 block mt-0.5">
                     This is your safe corner. No judgment, just purrs.
                 </span>
+            </div>
+
+            <div className="flex items-center gap-2 mb-3">
+                <span className="text-xs font-medium text-sand-700 shrink-0">Posting in</span>
+                <select
+                    value={language}
+                    onChange={(e) => setLanguage(e.target.value)}
+                    className={[
+                        "flex-1 px-3 py-2 border rounded-lg text-sm outline-none transition-colors cursor-pointer font-body bg-sand-50",
+                        !language
+                            ? "border-terracotta-300 text-sand-400 focus:border-terracotta-400"
+                            : "border-sand-300 text-sand-800 focus:border-terracotta-400",
+                    ].join(" ")}
+                >
+                    <option value="" disabled>Select a language — required</option>
+                    {LANGUAGE_OPTIONS.map((l) => (
+                        <option key={l.code} value={l.code}>{l.label}</option>
+                    ))}
+                </select>
             </div>
 
             <textarea
@@ -91,7 +114,7 @@ const PostComposer = ({ onPost }: PostComposerProps) => {
             </div>
 
             <div className="flex justify-between items-center mt-4 flex-wrap gap-3">
-                <div className="flex gap-4">
+                <div className="flex items-center gap-4">
                     <label className="flex items-center gap-1.5 text-xs text-sand-600 cursor-pointer">
                         <input
                             type="checkbox"
@@ -104,7 +127,7 @@ const PostComposer = ({ onPost }: PostComposerProps) => {
                 </div>
                 <button
                     onClick={handleSubmit}
-                    disabled={!text.trim() || isRateLimited}
+                    disabled={!text.trim() || !language || isRateLimited}
                     className="px-7 py-2.5 bg-terracotta-400 text-white text-sm font-semibold rounded-[10px] disabled:opacity-45 hover:bg-terracotta-500 hover:-translate-y-px transition-all cursor-pointer font-body"
                 >
                     Post

@@ -6,6 +6,7 @@ import PostComposer from "@/app/_components/PostComposer";
 import PostCard from "@/app/_components/PostCard";
 import usePostFeed, { FEED_FILTER_LABELS } from "@/app/_hooks/usePostFeed";
 import { TIME_RANGE_OPTIONS, formatCustomDate } from "@/app/_utils/time";
+import { LANGUAGE_OPTIONS } from "@/app/_constants";
 
 const VentPage = () => {
     const dateInputRef = useRef<HTMLInputElement>(null);
@@ -16,6 +17,7 @@ const VentPage = () => {
         filter,
         timeRange,
         customDate,
+        language,
         availableFilters,
         handlePost,
         handleHidePost,
@@ -23,6 +25,7 @@ const VentPage = () => {
         handleFilterChange,
         handleTimeRangeChange,
         handleDatePick,
+        handleLanguageChange,
         loadMore,
     } = usePostFeed();
 
@@ -51,6 +54,21 @@ const VentPage = () => {
                     ))}
                 </div>
             </div>
+
+            {filter !== "hidden" && (
+                <div className="flex gap-1.5 mb-3 items-center">
+                    <select
+                        value={language}
+                        onChange={(e) => handleLanguageChange(e.target.value)}
+                        className="px-2.5 py-1 border border-sand-200 rounded-lg text-[11px] bg-white text-sand-600 outline-none focus:border-terracotta-400 transition-colors cursor-pointer font-body font-medium"
+                    >
+                        <option value="">Any language</option>
+                        {LANGUAGE_OPTIONS.map((l) => (
+                            <option key={l.code} value={l.code}>{l.label}</option>
+                        ))}
+                    </select>
+                </div>
+            )}
 
             {filter !== "hidden" && (
                 <div className="flex gap-1.5 mb-4 items-center">

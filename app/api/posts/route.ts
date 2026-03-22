@@ -13,6 +13,7 @@ export const GET = async (request: NextRequest) => {
     const sort = searchParams.get("sort") ?? "recent";
     const authorOnly = searchParams.get("mine") === "true";
     const hiddenOnly = searchParams.get("hidden") === "true";
+    const lang = searchParams.get("lang");
 
     const { userId } = await auth();
 
@@ -24,6 +25,7 @@ export const GET = async (request: NextRequest) => {
         if (from) conditions.push(gte(posts.createdAt, new Date(Number(from))));
         if (to) conditions.push(lte(posts.createdAt, new Date(Number(to))));
         if (authorOnly && userId) conditions.push(eq(posts.authorId, userId));
+        if (lang) conditions.push(eq(posts.language, lang));
     }
 
     const postRows = await db
@@ -31,6 +33,7 @@ export const GET = async (request: NextRequest) => {
             id: posts.id,
             text: posts.text,
             mood: posts.mood,
+            language: posts.language,
             commentsEnabled: posts.commentsEnabled,
             hideIdentity: posts.hideIdentity,
             authorId: posts.authorId,
@@ -62,15 +65,20 @@ export const POST = async (request: NextRequest) => {
     const { userId } = await auth();
     const body = await request.json();
 
-    const { text: postText, mood, commentsEnabled, hideIdentity } = body as {
+    const { text: postText, mood, language, commentsEnabled, hideIdentity } = body as {
         text: string;
         mood: string | null;
+        language: string;
         commentsEnabled: boolean;
         hideIdentity: boolean;
     };
 
     if (!postText?.trim()) {
         return NextResponse.json({ error: "Post text is required." }, { status: 400 });
+    }
+
+    if (!language?.trim()) {
+        return NextResponse.json({ error: "Language is required." }, { status: 400 });
     }
 
     if (postText.trim().length > 2000) {
@@ -82,6 +90,7 @@ export const POST = async (request: NextRequest) => {
         .values({
             text: postText.trim(),
             mood: mood ?? null,
+            language: language.trim(),
             commentsEnabled: commentsEnabled ?? true,
             hideIdentity: userId ? (hideIdentity ?? true) : true,
             authorId: userId ?? null,
