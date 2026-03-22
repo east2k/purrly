@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { Fraunces, DM_Sans } from "next/font/google";
-import { ClerkProvider, Show, SignInButton, UserButton } from "@clerk/nextjs";
+import { ClerkProvider, Show, SignInButton } from "@clerk/nextjs";
 import Image from "next/image";
 import TabNav from "@/app/_components/TabNav";
 import IdentityToggle from "@/app/_components/IdentityToggle";
+import UserMenu from "@/app/_components/UserMenu";
 import { IdentityPreferenceProvider } from "@/app/_context/IdentityPreferenceContext";
 import "./globals.css";
 
@@ -42,7 +43,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => (
                         </p>
                         <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-3">
                             <Show when="signed-in">
-                                <UserButton />
+                                <UserMenu />
                             </Show>
                             <Show when="signed-out">
                                 <SignInButton mode="modal">
