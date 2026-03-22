@@ -132,7 +132,7 @@ const PostCard = ({ post, animationDelay = "0s", onHide, onUnhide }: PostCardPro
                                 <span className="text-sm text-sand-900">{c.text}</span>
                             </div>
                             <div className="flex items-center gap-1.5 shrink-0">
-                                {isSignedIn && (
+                                {isSignedIn && c.authorId !== user?.id && (
                                     <div className="relative">
                                         <button
                                             onClick={() => setWhisperPrompt(whisperPrompt === c.id ? null : c.id)}
