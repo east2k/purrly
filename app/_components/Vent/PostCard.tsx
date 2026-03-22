@@ -4,10 +4,12 @@ import { useState } from "react";
 import { UserRound } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
 import { timeAgo } from "@/app/_utils/time";
+import { getPostDisplayName, getCommentDisplayName } from "@/app/_utils/identity";
+import usePostComments from "@/app/_hooks/usePostComments";
 import ReactionButtons from "./ReactionButtons";
 import ReportButton from "../ReportButton";
 import SignupNudge from "../SignupNudge";
-import type { ApiPost, ApiComment } from "@/types";
+import type { ApiPost } from "@/types";
 
 type PostCardProps = {
     post: ApiPost;
@@ -16,65 +18,26 @@ type PostCardProps = {
     onUnhide?: (postId: number) => void;
 };
 
-const getDisplayName = (
-    authorId: string | null,
-    authorDisplayId: string | null,
-    hideIdentity: boolean,
-) => {
-    if (!authorId || hideIdentity) return "Purrlynonymous";
-    return `Purrlynonymous-${authorDisplayId}`;
-};
-
-const getCommentDisplayName = (comment: ApiComment) => {
-    if (comment.hideIdentity) return "Purrlynonymous";
-    return `Purrlynonymous-${comment.authorDisplayId}`;
-};
-
 const PostCard = ({ post, animationDelay = "0s", onHide, onUnhide }: PostCardProps) => {
-    const [showComments, setShowComments] = useState(false);
-    const [comments, setComments] = useState<ApiComment[]>([]);
-    const [commentsLoaded, setCommentsLoaded] = useState(false);
-    const [commentText, setCommentText] = useState("");
-    const [submittingComment, setSubmittingComment] = useState(false);
     const [whisperPrompt, setWhisperPrompt] = useState<number | null>(null);
-    const [localCommentCount, setLocalCommentCount] = useState(Number(post.commentCount));
     const { isSignedIn, user } = useUser();
+    const {
+        comments,
+        showComments,
+        commentText,
+        setCommentText,
+        submitting,
+        count,
+        toggleComments,
+        submitComment,
+    } = usePostComments(post.id, post.commentCount);
 
     const isAuthor = !!user && post.authorId === user.id;
+    const timestamp = new Date(post.createdAt).getTime();
 
     const handleHide = async () => {
         const res = await fetch(`/api/posts/${post.id}`, { method: "DELETE" });
         if (res.ok) onHide?.(post.id);
-    };
-
-    const loadComments = async () => {
-        if (commentsLoaded) return;
-        const res = await fetch(`/api/posts/${post.id}/comments`);
-        if (!res.ok) return;
-        const data: ApiComment[] = await res.json();
-        setComments(data);
-        setCommentsLoaded(true);
-    };
-
-    const handleToggleComments = () => {
-        if (!showComments) loadComments();
-        setShowComments(!showComments);
-    };
-
-    const handleComment = async () => {
-        if (!commentText.trim() || submittingComment) return;
-        setSubmittingComment(true);
-        const res = await fetch(`/api/posts/${post.id}/comments`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ text: commentText.trim(), hideIdentity: false }),
-        });
-        setSubmittingComment(false);
-        if (!res.ok) return;
-        const newComment: ApiComment = await res.json();
-        setComments((prev) => [...prev, newComment]);
-        setLocalCommentCount((prev) => prev + 1);
-        setCommentText("");
     };
 
     const handleWhisperRequest = async (targetUserId: string) => {
@@ -90,8 +53,6 @@ const PostCard = ({ post, animationDelay = "0s", onHide, onUnhide }: PostCardPro
         setWhisperPrompt(null);
     };
 
-    const timestamp = new Date(post.createdAt).getTime();
-
     return (
         <div
             className="bg-white rounded-2xl px-6 py-5 mb-3.5 border border-sand-300 shadow-card animate-fade-up"
@@ -103,7 +64,7 @@ const PostCard = ({ post, animationDelay = "0s", onHide, onUnhide }: PostCardPro
                         <UserRound size={15} className="text-sand-500" />
                     </div>
                     <span className="text-xs font-semibold text-sand-600">
-                        {getDisplayName(post.authorId, post.authorDisplayId, post.hideIdentity)}
+                        {getPostDisplayName(post.authorId, post.authorDisplayId, post.hideIdentity)}
                     </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -140,9 +101,9 @@ const PostCard = ({ post, animationDelay = "0s", onHide, onUnhide }: PostCardPro
                 {post.commentsEnabled ? (
                     <button
                         className="text-xs text-sand-600 hover:text-terracotta-400 transition-colors bg-transparent border-none cursor-pointer py-1 font-body"
-                        onClick={handleToggleComments}
+                        onClick={toggleComments}
                     >
-                        💬{localCommentCount > 0 ? ` ${localCommentCount} ` : " "}
+                        💬{count > 0 ? ` ${count} ` : " "}
                         {showComments ? "Hide" : "Comments"}
                     </button>
                 ) : (
@@ -211,12 +172,12 @@ const PostCard = ({ post, animationDelay = "0s", onHide, onUnhide }: PostCardPro
                                 placeholder="Be kind..."
                                 value={commentText}
                                 onChange={(e) => setCommentText(e.target.value)}
-                                onKeyDown={(e) => e.key === "Enter" && !submittingComment && handleComment()}
-                                disabled={submittingComment}
+                                onKeyDown={(e) => e.key === "Enter" && !submitting && submitComment()}
+                                disabled={submitting}
                             />
                             <button
-                                onClick={handleComment}
-                                disabled={!commentText.trim() || submittingComment}
+                                onClick={submitComment}
+                                disabled={!commentText.trim() || submitting}
                                 className="px-4 py-2 bg-terracotta-400 text-white text-sm font-medium rounded-lg disabled:opacity-40 hover:bg-terracotta-500 transition-colors cursor-pointer font-body"
                             >
                                 Send
