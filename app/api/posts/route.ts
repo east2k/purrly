@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
-import { posts, comments, reactions, users } from "@/lib/schema";
-import { desc, eq, isNull, sql, and, gte, lte, count } from "drizzle-orm";
+import { posts, users } from "@/lib/schema";
+import { desc, eq, isNull, sql, and, gte, lte } from "drizzle-orm";
 
 export const GET = async (request: NextRequest) => {
     const { searchParams } = request.nextUrl;
@@ -38,7 +38,9 @@ export const GET = async (request: NextRequest) => {
             authorDisplayId: users.displayId,
             createdAt: posts.createdAt,
             hugCount: sql<number>`(SELECT count(*) FROM reactions WHERE reactions.post_id = ${posts.id} AND reactions.type = 'HUG')`,
-            meTooCount: sql<number>`(SELECT count(*) FROM reactions WHERE reactions.post_id = ${posts.id} AND reactions.type = 'ME_TOO')`,
+            huggedByMe: userId
+                ? sql<boolean>`EXISTS (SELECT 1 FROM reactions WHERE reactions.post_id = ${posts.id} AND reactions.type = 'HUG' AND reactions.author_id = ${userId})`
+                : sql<boolean>`false`,
             commentCount: sql<number>`(SELECT count(*) FROM comments WHERE comments.post_id = ${posts.id} AND comments.deleted_at IS NULL)`,
         })
         .from(posts)
@@ -98,7 +100,7 @@ export const POST = async (request: NextRequest) => {
         ...newPost,
         authorDisplayId,
         hugCount: 0,
-        meTooCount: 0,
+        huggedByMe: false,
         commentCount: 0,
     }, { status: 201 });
 };

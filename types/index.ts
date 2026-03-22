@@ -22,7 +22,7 @@ export type ApiPost = {
     authorDisplayId: string | null;
     createdAt: string;
     hugCount: number;
-    meTooCount: number;
+    huggedByMe: boolean;
     commentCount: number;
 };
 

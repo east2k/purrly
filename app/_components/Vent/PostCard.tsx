@@ -34,7 +34,7 @@ const PostCard = ({ post, animationDelay = "0s" }: PostCardProps) => {
     const [commentsLoaded, setCommentsLoaded] = useState(false);
     const [commentText, setCommentText] = useState("");
     const [whisperPrompt, setWhisperPrompt] = useState<number | null>(null);
-    const [localCommentCount, setLocalCommentCount] = useState(post.commentCount);
+    const [localCommentCount, setLocalCommentCount] = useState(Number(post.commentCount));
     const { isSignedIn } = useUser();
 
     const loadComments = async () => {
@@ -104,7 +104,7 @@ const PostCard = ({ post, animationDelay = "0s" }: PostCardProps) => {
 
             <p className="text-[15px] leading-[1.65] text-sand-900 mb-3">{post.text}</p>
 
-            <ReactionButtons postId={post.id} hugCount={post.hugCount} meTooCount={post.meTooCount} />
+            <ReactionButtons postId={post.id} hugCount={post.hugCount} huggedByMe={post.huggedByMe} />
 
             <div className="border-t border-sand-300 pt-2.5 mt-3">
                 {post.commentsEnabled ? (
@@ -112,7 +112,7 @@ const PostCard = ({ post, animationDelay = "0s" }: PostCardProps) => {
                         className="text-xs text-sand-600 hover:text-terracotta-400 transition-colors bg-transparent border-none cursor-pointer py-1 font-body"
                         onClick={handleToggleComments}
                     >
-                        💬 {localCommentCount > 0 ? localCommentCount : ""}{" "}
+                        💬{localCommentCount > 0 ? ` ${localCommentCount} ` : " "}
                         {showComments ? "Hide" : "Comments"}
                     </button>
                 ) : (
