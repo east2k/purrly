@@ -1,12 +1,11 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 
-type Tab = {
-    href: string;
-    label: string;
-};
+type Tab = { href: string; label: string };
 
 const TABS: Tab[] = [
     { href: "/", label: "🐾 Vent" },
@@ -14,12 +13,30 @@ const TABS: Tab[] = [
     { href: "/whispers", label: "💬 Whispers" },
 ];
 
-type TabNavProps = {
-    badges?: Partial<Record<string, boolean>>;
-};
-
-const TabNav = ({ badges = {} }: TabNavProps) => {
+const TabNav = () => {
     const pathname = usePathname();
+    const { isSignedIn, user } = useUser();
+    const [hasWhisperRequests, setHasWhisperRequests] = useState(false);
+
+    useEffect(() => {
+        let cancelled = false;
+        const check = async () => {
+            if (!isSignedIn || !user) {
+                if (!cancelled) setHasWhisperRequests(false);
+                return;
+            }
+            const res = await fetch("/api/whispers");
+            if (cancelled || !res.ok) return;
+            const whispers: { status: string; requestedById: string }[] = await res.json();
+            if (!cancelled) {
+                setHasWhisperRequests(
+                    whispers.some((w) => w.status === "PENDING" && w.requestedById !== user.id)
+                );
+            }
+        };
+        check();
+        return () => { cancelled = true; };
+    }, [isSignedIn, user, pathname]);
 
     const isActive = (href: string) =>
         href === "/" ? pathname === "/" : pathname.startsWith(href);
@@ -38,7 +55,7 @@ const TabNav = ({ badges = {} }: TabNavProps) => {
                     ].join(" ")}
                 >
                     {tab.label}
-                    {badges[tab.href] && (
+                    {tab.href === "/whispers" && hasWhisperRequests && (
                         <span className="absolute top-1.5 right-2 w-2 h-2 bg-terracotta-400 rounded-full" />
                     )}
                 </Link>

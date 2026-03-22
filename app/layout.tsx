@@ -50,7 +50,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => (
                             </Show>
                         </div>
                     </header>
-                    <TabNav badges={{ "/whispers": true }} />
+                    <TabNav />
                     {children}
                 </div>
             </body>
