@@ -7,6 +7,8 @@ import ReportButton from "@/app/_components/ReportButton";
 import { getPusherClient } from "@/lib/pusher";
 import type { ApiWhisper, ApiWhisperMessage } from "@/types";
 
+const MESSAGE_LIMIT = 15;
+
 type WhisperThreadProps = {
     whisper: ApiWhisper;
     currentUserId: string;
@@ -17,9 +19,12 @@ type WhisperThreadProps = {
 const WhisperThread = ({ whisper, currentUserId, onBack, onExtend }: WhisperThreadProps) => {
     const [messages, setMessages] = useState<ApiWhisperMessage[]>([]);
     const [loadingMessages, setLoadingMessages] = useState(true);
+    const [loadingMore, setLoadingMore] = useState(false);
+    const [hasMore, setHasMore] = useState(false);
     const [messageText, setMessageText] = useState("");
     const [extending, setExtending] = useState(false);
     const [extended, setExtended] = useState(whisper.extended);
+    const scrollRef = useRef<HTMLDivElement>(null);
     const bottomRef = useRef<HTMLDivElement>(null);
 
     const otherDisplayId =
@@ -29,12 +34,30 @@ const WhisperThread = ({ whisper, currentUserId, onBack, onExtend }: WhisperThre
 
     useEffect(() => {
         const load = async () => {
-            const res = await fetch(`/api/whispers/${whisper.id}/messages`);
-            if (res.ok) setMessages(await res.json());
+            const res = await fetch(`/api/whispers/${whisper.id}/messages?limit=${MESSAGE_LIMIT}`);
+            if (res.ok) {
+                const data: ApiWhisperMessage[] = await res.json();
+                setMessages(data);
+                setHasMore(data.length === MESSAGE_LIMIT);
+            }
             setLoadingMessages(false);
         };
         load();
     }, [whisper.id]);
+
+    useEffect(() => {
+        if (!loadingMessages) {
+            bottomRef.current?.scrollIntoView({ behavior: "instant" });
+        }
+    }, [loadingMessages]);
+
+    useEffect(() => {
+        if (loadingMessages) return;
+        const el = scrollRef.current;
+        if (!el) return;
+        const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 120;
+        if (nearBottom) bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, [messages, loadingMessages]);
 
     useEffect(() => {
         const client = getPusherClient();
@@ -51,9 +74,31 @@ const WhisperThread = ({ whisper, currentUserId, onBack, onExtend }: WhisperThre
         };
     }, [whisper.id]);
 
-    useEffect(() => {
-        bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, [messages]);
+    const loadMore = async () => {
+        if (loadingMore || !hasMore || messages.length === 0) return;
+        const oldestId = messages[0].id;
+        setLoadingMore(true);
+
+        const res = await fetch(`/api/whispers/${whisper.id}/messages?limit=${MESSAGE_LIMIT}&before=${oldestId}`);
+        if (res.ok) {
+            const older: ApiWhisperMessage[] = await res.json();
+            const el = scrollRef.current;
+            const prevScrollHeight = el?.scrollHeight ?? 0;
+
+            setMessages((prev) => [...older, ...prev]);
+            setHasMore(older.length === MESSAGE_LIMIT);
+
+            requestAnimationFrame(() => {
+                if (el) el.scrollTop = el.scrollHeight - prevScrollHeight;
+            });
+        }
+        setLoadingMore(false);
+    };
+
+    const handleScroll = () => {
+        const el = scrollRef.current;
+        if (el && el.scrollTop < 60) loadMore();
+    };
 
     const handleSend = async () => {
         if (!messageText.trim()) return;
@@ -80,7 +125,7 @@ const WhisperThread = ({ whisper, currentUserId, onBack, onExtend }: WhisperThre
     };
 
     return (
-        <div className="flex flex-col h-full">
+        <div className="flex flex-col">
             <div className="flex items-center gap-3 mb-4">
                 <button
                     onClick={onBack}
@@ -111,7 +156,15 @@ const WhisperThread = ({ whisper, currentUserId, onBack, onExtend }: WhisperThre
                 )}
             </div>
 
-            <div className="flex-1 space-y-3 mb-4 overflow-y-auto">
+            <div
+                ref={scrollRef}
+                onScroll={handleScroll}
+                className="h-[50vh] overflow-y-auto space-y-3 mb-4 pr-1"
+            >
+                {loadingMore && (
+                    <p className="text-center text-xs text-sand-400 py-2">Loading older messages...</p>
+                )}
+
                 {loadingMessages ? (
                     <>
                         {[false, true, false, true].map((isMine, i) => (
@@ -121,6 +174,7 @@ const WhisperThread = ({ whisper, currentUserId, onBack, onExtend }: WhisperThre
                         ))}
                     </>
                 ) : null}
+
                 {!loadingMessages && messages.map((m) => {
                     const isMine = m.senderId === currentUserId;
                     return (
@@ -146,6 +200,7 @@ const WhisperThread = ({ whisper, currentUserId, onBack, onExtend }: WhisperThre
                         </div>
                     );
                 })}
+
                 {!loadingMessages && messages.length === 0 && (
                     <p className="text-center text-sm text-sand-400 py-8">No messages yet. Say something gentle 🌸</p>
                 )}

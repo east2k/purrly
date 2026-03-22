@@ -2,12 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { whisperMessages, whispers, users } from "@/lib/schema";
-import { eq, or, and, asc } from "drizzle-orm";
+import { eq, or, and, desc, lt } from "drizzle-orm";
 import { pusherServer } from "@/lib/pusher";
 
 type RouteParams = { params: Promise<{ id: string }> };
 
-export const GET = async (_request: NextRequest, { params }: RouteParams) => {
+export const GET = async (request: NextRequest, { params }: RouteParams) => {
     const { userId } = await auth();
     if (!userId) {
         return NextResponse.json({ error: "Sign in required." }, { status: 401 });
@@ -27,7 +27,15 @@ export const GET = async (_request: NextRequest, { params }: RouteParams) => {
         return NextResponse.json({ error: "Whisper not found." }, { status: 404 });
     }
 
-    const messages = await db
+    const { searchParams } = request.nextUrl;
+    const limit = Math.min(Number(searchParams.get("limit") ?? 15), 50);
+    const before = searchParams.get("before");
+
+    const conditions = before
+        ? and(eq(whisperMessages.whisperId, whisperId), lt(whisperMessages.id, Number(before)))
+        : eq(whisperMessages.whisperId, whisperId);
+
+    const rows = await db
         .select({
             id: whisperMessages.id,
             senderId: whisperMessages.senderId,
@@ -37,10 +45,11 @@ export const GET = async (_request: NextRequest, { params }: RouteParams) => {
         })
         .from(whisperMessages)
         .leftJoin(users, eq(whisperMessages.senderId, users.id))
-        .where(eq(whisperMessages.whisperId, whisperId))
-        .orderBy(asc(whisperMessages.createdAt));
+        .where(conditions)
+        .orderBy(desc(whisperMessages.createdAt))
+        .limit(limit);
 
-    return NextResponse.json(messages);
+    return NextResponse.json(rows.reverse());
 };
 
 export const POST = async (request: NextRequest, { params }: RouteParams) => {
