@@ -80,13 +80,17 @@ const WhisperThread = ({ whisper, currentUserId, onBack, onExtend }: WhisperThre
                         <CountdownTimer expiresAt={new Date(whisper.expiresAt).getTime()} />
                     )}
                 </div>
-                {!extended && (
+                {extended ? (
+                    <p className="text-xs text-sand-400 italic">
+                        Extension requested, waiting for a response
+                    </p>
+                ) : (
                     <button
                         onClick={handleExtend}
                         disabled={extending}
                         className="text-xs text-terracotta-400 hover:text-terracotta-500 transition-colors cursor-pointer font-body disabled:opacity-50"
                     >
-                        {extending ? "Requesting..." : "Request more time"}
+                        {extending ? "Sending..." : "Request more time"}
                     </button>
                 )}
             </div>
