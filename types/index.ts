@@ -10,6 +10,7 @@ export type ApiComment = {
     authorDisplayId: string | null;
     hideIdentity: boolean;
     createdAt: string;
+    reportCount: number;
 };
 
 export type ApiPost = {
@@ -24,6 +25,7 @@ export type ApiPost = {
     hugCount: number;
     huggedByMe: boolean;
     commentCount: number;
+    reportCount: number;
     deletedAt: string | null;
 };
 

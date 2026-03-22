@@ -1,6 +1,7 @@
 import type { Whisper, WhisperMemory, SelfCareKey, SelfCareConfig, MoodOption } from "@/types";
 
 export const MAX_UNSIGNED_POSTS_PER_DAY = 3;
+export const REPORT_THRESHOLD = 5;
 export const WHISPER_DURATION_MS = 48 * 60 * 60 * 1000;
 export const POSTS_PER_PAGE = 5;
 export const MOCK_CURRENT_USER_ID = "user_current";

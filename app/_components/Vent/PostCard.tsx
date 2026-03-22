@@ -7,6 +7,7 @@ import { timeAgo } from "@/app/_utils/time";
 import { getPostDisplayName, getCommentDisplayName } from "@/app/_utils/identity";
 import usePostComments from "@/app/_hooks/usePostComments";
 import { useIdentityPreference } from "@/app/_context/IdentityPreferenceContext";
+import { REPORT_THRESHOLD } from "@/app/_constants";
 import ReactionButtons from "./ReactionButtons";
 import ReportButton from "../ReportButton";
 import SignupNudge from "../SignupNudge";
@@ -21,6 +22,9 @@ type PostCardProps = {
 
 const PostCard = ({ post, animationDelay = "0s", onHide, onUnhide }: PostCardProps) => {
     const [whisperPrompt, setWhisperPrompt] = useState<number | null>(null);
+    const [showFlaggedPost, setShowFlaggedPost] = useState(false);
+    const [shownFlaggedComments, setShownFlaggedComments] = useState<Set<number>>(new Set());
+    const postFlagged = Number(post.reportCount) > REPORT_THRESHOLD;
     const { isSignedIn, user } = useUser();
     const { hideIdentity } = useIdentityPreference();
     const {
@@ -95,7 +99,29 @@ const PostCard = ({ post, animationDelay = "0s", onHide, onUnhide }: PostCardPro
 
             {post.mood && <span className="text-[22px] inline-block mb-1.5">{post.mood}</span>}
 
-            <p className="text-[15px] leading-[1.65] text-sand-900 mb-3">{post.text}</p>
+            {postFlagged && !showFlaggedPost ? (
+                <div className="mb-3 py-3 px-4 bg-sand-100 rounded-xl border border-sand-200 text-center">
+                    <p className="text-xs text-sand-500 mb-2">This post has been reported numerous times.</p>
+                    <button
+                        onClick={() => setShowFlaggedPost(true)}
+                        className="text-xs text-terracotta-400 hover:text-terracotta-500 font-medium cursor-pointer font-body"
+                    >
+                        See anyway
+                    </button>
+                </div>
+            ) : (
+                <div>
+                    <p className="text-[15px] leading-[1.65] text-sand-900 mb-3">{post.text}</p>
+                    {postFlagged && (
+                        <button
+                            onClick={() => setShowFlaggedPost(false)}
+                            className="text-[11px] text-sand-400 hover:text-sand-600 cursor-pointer font-body mb-3 block"
+                        >
+                            Hide again
+                        </button>
+                    )}
+                </div>
+            )}
 
             <ReactionButtons postId={post.id} hugCount={post.hugCount} huggedByMe={post.huggedByMe} />
 
@@ -129,7 +155,29 @@ const PostCard = ({ post, animationDelay = "0s", onHide, onUnhide }: PostCardPro
                                         {timeAgo(new Date(c.createdAt).getTime())}
                                     </span>
                                 </div>
-                                <span className="text-sm text-sand-900">{c.text}</span>
+                                {Number(c.reportCount) > REPORT_THRESHOLD && !shownFlaggedComments.has(c.id) ? (
+                                    <div className="py-1.5 px-3 bg-sand-100 rounded-lg border border-sand-200 text-center">
+                                        <p className="text-[11px] text-sand-500 mb-1">Reported numerous times.</p>
+                                        <button
+                                            onClick={() => setShownFlaggedComments(new Set([...shownFlaggedComments, c.id]))}
+                                            className="text-[11px] text-terracotta-400 hover:text-terracotta-500 font-medium cursor-pointer font-body"
+                                        >
+                                            See anyway
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <span className="text-sm text-sand-900">{c.text}</span>
+                                        {Number(c.reportCount) > REPORT_THRESHOLD && (
+                                            <button
+                                                onClick={() => setShownFlaggedComments((prev) => { const next = new Set(prev); next.delete(c.id); return next; })}
+                                                className="text-[10px] text-sand-400 hover:text-sand-600 cursor-pointer font-body block mt-0.5"
+                                            >
+                                                Hide again
+                                            </button>
+                                        )}
+                                    </div>
+                                )}
                             </div>
                             <div className="flex items-center gap-1.5 shrink-0">
                                 {isSignedIn && c.authorId !== user?.id && (

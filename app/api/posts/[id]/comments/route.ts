@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { comments, users, posts } from "@/lib/schema";
-import { eq, and, isNull, asc } from "drizzle-orm";
+import { eq, and, isNull, asc, sql } from "drizzle-orm";
 
 type RouteParams = { params: Promise<{ id: string }> };
 
@@ -18,6 +18,7 @@ export const GET = async (_request: NextRequest, { params }: RouteParams) => {
             authorDisplayId: users.displayId,
             hideIdentity: comments.hideIdentity,
             createdAt: comments.createdAt,
+            reportCount: sql<number>`(SELECT count(*) FROM reports WHERE reports.content_type = 'COMMENT' AND reports.content_id = ${comments.id})`,
         })
         .from(comments)
         .leftJoin(users, eq(comments.authorId, users.id))
@@ -72,5 +73,6 @@ export const POST = async (request: NextRequest, { params }: RouteParams) => {
     return NextResponse.json({
         ...newComment,
         authorDisplayId: user?.displayId ?? null,
+        reportCount: 0,
     }, { status: 201 });
 };
