@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { UserRound } from "lucide-react";
 import { timeAgo } from "@/app/_utils/time";
 import type { Post } from "@/types";
 
@@ -26,9 +27,14 @@ const PostCard = ({ post, onAddComment, animationDelay = "0s" }: PostCardProps) 
             style={{ animationDelay }}
         >
             <div className="flex justify-between items-center mb-2">
-                <span className="text-xs font-semibold text-sand-600">
-                    {post.anonymous ? "Anonymous" : "You"}
-                </span>
+                <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-full bg-sand-200 flex items-center justify-center shrink-0">
+                        <UserRound size={15} className="text-sand-500" />
+                    </div>
+                    <span className="text-xs font-semibold text-sand-600">
+                        {post.anonymous ? "Anonymous" : "You"}
+                    </span>
+                </div>
                 <span className="text-xs text-sand-500">{timeAgo(post.timestamp)}</span>
             </div>
 
@@ -53,9 +59,12 @@ const PostCard = ({ post, onAddComment, animationDelay = "0s" }: PostCardProps) 
             {showComments && post.commentsEnabled && (
                 <div className="mt-3 pt-3 border-t border-dashed border-sand-300">
                     {post.comments.map((c) => (
-                        <div key={c.id} className="flex justify-between items-baseline py-2 gap-3">
+                        <div key={c.id} className="flex items-start gap-2 py-2">
+                            <div className="w-6 h-6 rounded-full bg-sand-200 flex items-center justify-center shrink-0 mt-0.5">
+                                <UserRound size={13} className="text-sand-500" />
+                            </div>
                             <span className="text-sm text-sand-900 flex-1">{c.text}</span>
-                            <span className="text-[11px] text-sand-500 whitespace-nowrap">
+                            <span className="text-[11px] text-sand-500 whitespace-nowrap mt-0.5">
                                 {timeAgo(c.timestamp)}
                             </span>
                         </div>

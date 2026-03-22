@@ -13,7 +13,10 @@ const PostComposer = ({ onPost }: PostComposerProps) => {
     const [mood, setMood] = useState<string | null>(null);
     const [commentsEnabled, setCommentsEnabled] = useState(true);
     const [anonymous, setAnonymous] = useState(true);
+    const [showAllMoods, setShowAllMoods] = useState(false);
     const textRef = useRef<HTMLTextAreaElement>(null);
+
+    const visibleMoods = showAllMoods ? MOOD_OPTIONS : MOOD_OPTIONS.slice(0, 6);
 
     const handleSubmit = () => {
         if (!text.trim()) return;
@@ -44,7 +47,7 @@ const PostComposer = ({ onPost }: PostComposerProps) => {
 
             <div className="flex items-center gap-1.5 mt-3.5 flex-wrap">
                 <span className="text-xs text-sand-600 mr-1">Mood:</span>
-                {MOOD_OPTIONS.map((m) => (
+                {visibleMoods.map((m) => (
                     <button
                         key={m.label}
                         title={m.label}
@@ -59,6 +62,13 @@ const PostComposer = ({ onPost }: PostComposerProps) => {
                         {m.emoji}
                     </button>
                 ))}
+                <button
+                    onClick={() => setShowAllMoods(!showAllMoods)}
+                    className="w-9 h-9 rounded-full border-2 border-transparent bg-sand-50 hover:border-sand-300 text-xs text-sand-500 flex items-center justify-center transition-all cursor-pointer"
+                    title={showAllMoods ? "Show less" : "Show more"}
+                >
+                    {showAllMoods ? "−" : "···"}
+                </button>
             </div>
 
             <div className="flex justify-between items-center mt-4 flex-wrap gap-3">

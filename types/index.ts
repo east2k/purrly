@@ -1,7 +1,5 @@
-export type Mood = "😤" | "😢" | "😐" | "🙂" | "😊" | "✨";
-
 export type MoodOption = {
-  emoji: Mood;
+  emoji: string;
   label: string;
 };
 
