@@ -1,19 +1,15 @@
 "use client";
 
-import { useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import SelfCareCard from "@/app/_components/SelfCare/SelfCareCard";
 import SignupNudge from "@/app/_components/SignupNudge";
+import useSelfCare from "@/app/_hooks/useSelfCare";
 import { SELF_CARE_CONFIG } from "@/app/_constants";
-import type { CareState, SelfCareKey } from "@/types";
+import type { SelfCareKey } from "@/types";
 
 const CarePage = () => {
-    const [care, setCare] = useState<CareState>({ water: 3, sleep: 6 });
     const { isSignedIn } = useUser();
-
-    const handleCareChange = (key: SelfCareKey, value: number) => {
-        setCare({ ...care, [key]: value });
-    };
+    const { care, handleCareChange } = useSelfCare();
 
     if (!isSignedIn) {
         return (

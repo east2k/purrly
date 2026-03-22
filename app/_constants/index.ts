@@ -2,6 +2,8 @@ import type { Post, Whisper, WhisperMemory, SelfCareKey, SelfCareConfig, MoodOpt
 
 export const MAX_UNSIGNED_POSTS_PER_DAY = 3;
 export const WHISPER_DURATION_MS = 48 * 60 * 60 * 1000;
+export const POSTS_PER_PAGE = 5;
+export const MOCK_CURRENT_USER_ID = "user_current";
 
 export const SAMPLE_POSTS: Post[] = [
     {
@@ -14,7 +16,7 @@ export const SAMPLE_POSTS: Post[] = [
         authorDisplayId: null,
         comments: [],
         reactions: { hugs: 12, meToo: 5 },
-        timestamp: Date.now() - 3600000 * 5,
+        timestamp: Date.now() - 3600000 * 2,
     },
     {
         id: 2,
@@ -35,7 +37,7 @@ export const SAMPLE_POSTS: Post[] = [
             },
         ],
         reactions: { hugs: 24, meToo: 8 },
-        timestamp: Date.now() - 3600000 * 12,
+        timestamp: Date.now() - 3600000 * 5,
     },
     {
         id: 3,
@@ -47,7 +49,126 @@ export const SAMPLE_POSTS: Post[] = [
         authorDisplayId: "2091",
         comments: [],
         reactions: { hugs: 7, meToo: 15 },
+        timestamp: Date.now() - 3600000 * 12,
+    },
+    {
+        id: 4,
+        text: "Anyone else feel like they're just performing being okay? Like, I smile at work all day and then come home and just... collapse.",
+        mood: "🫠",
+        commentsEnabled: true,
+        hideIdentity: true,
+        authorId: "user_jkl012",
+        authorDisplayId: "5643",
+        comments: [
+            {
+                id: 2,
+                text: "This hits too close to home. You're not alone.",
+                timestamp: Date.now() - 3600000 * 10,
+                authorId: "user_abc123",
+                authorDisplayId: "7382",
+                hideIdentity: false,
+            },
+        ],
+        reactions: { hugs: 41, meToo: 29 },
+        timestamp: Date.now() - 3600000 * 18,
+    },
+    {
+        id: 5,
+        text: "My therapist told me it's okay to outgrow people. That doesn't make it hurt less, but it makes it make sense.",
+        mood: "🥲",
+        commentsEnabled: true,
+        hideIdentity: false,
+        authorId: "user_mno345",
+        authorDisplayId: "9127",
+        comments: [],
+        reactions: { hugs: 33, meToo: 12 },
         timestamp: Date.now() - 3600000 * 24,
+    },
+    {
+        id: 6,
+        text: "Took a walk today instead of doomscrolling. 10/10 would recommend. The sky was doing something crazy with the clouds.",
+        mood: "😊",
+        commentsEnabled: true,
+        hideIdentity: false,
+        authorId: MOCK_CURRENT_USER_ID,
+        authorDisplayId: "7382",
+        comments: [
+            {
+                id: 3,
+                text: "Proud of you for that!",
+                timestamp: Date.now() - 3600000 * 20,
+                authorId: "user_def456",
+                authorDisplayId: "4519",
+                hideIdentity: false,
+            },
+        ],
+        reactions: { hugs: 18, meToo: 4 },
+        timestamp: Date.now() - 3600000 * 30,
+    },
+    {
+        id: 7,
+        text: "I got rejected from my dream job today. Three rounds of interviews for nothing. I don't even know what I did wrong.",
+        mood: "😢",
+        commentsEnabled: true,
+        hideIdentity: true,
+        authorId: null,
+        authorDisplayId: null,
+        comments: [],
+        reactions: { hugs: 56, meToo: 19 },
+        timestamp: Date.now() - 3600000 * 36,
+    },
+    {
+        id: 8,
+        text: "Does anyone else's cat just... stare at them like they know all your secrets? Because mine definitely does.",
+        mood: "🙈",
+        commentsEnabled: true,
+        hideIdentity: false,
+        authorId: MOCK_CURRENT_USER_ID,
+        authorDisplayId: "7382",
+        comments: [
+            {
+                id: 4,
+                text: "Mine judges me every time I eat cereal for dinner 😂",
+                timestamp: Date.now() - 3600000 * 33,
+                authorId: "user_jkl012",
+                authorDisplayId: "5643",
+                hideIdentity: false,
+            },
+            {
+                id: 5,
+                text: "They absolutely do and I'm here for it",
+                timestamp: Date.now() - 3600000 * 32,
+                authorId: "user_mno345",
+                authorDisplayId: "9127",
+                hideIdentity: false,
+            },
+        ],
+        reactions: { hugs: 9, meToo: 22 },
+        timestamp: Date.now() - 3600000 * 42,
+    },
+    {
+        id: 9,
+        text: "Haven't talked to my best friend in 3 months. We didn't fight or anything. Life just... happened. And now it feels too late to reach out.",
+        mood: "😔",
+        commentsEnabled: true,
+        hideIdentity: true,
+        authorId: "user_pqr678",
+        authorDisplayId: "3318",
+        comments: [],
+        reactions: { hugs: 28, meToo: 37 },
+        timestamp: Date.now() - 3600000 * 48,
+    },
+    {
+        id: 10,
+        text: "Cooked a real meal today instead of ordering in. It wasn't great but I made it with my own hands and that counts for something.",
+        mood: "🫶",
+        commentsEnabled: true,
+        hideIdentity: false,
+        authorId: "user_stu901",
+        authorDisplayId: "6204",
+        comments: [],
+        reactions: { hugs: 15, meToo: 6 },
+        timestamp: Date.now() - 3600000 * 60,
     },
 ];
 
@@ -98,8 +219,6 @@ export const MOOD_OPTIONS: MoodOption[] = [
     { emoji: "🌸", label: "Soft" },
     { emoji: "🌈", label: "Hopeful" },
 ];
-
-export const MOCK_CURRENT_USER_ID = "user_current";
 
 export const SAMPLE_WHISPERS: Whisper[] = [
     {
