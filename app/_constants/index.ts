@@ -1,4 +1,7 @@
-import type { Post, SelfCareKey, SelfCareConfig, MoodOption } from "@/types";
+import type { Post, Whisper, WhisperMemory, SelfCareKey, SelfCareConfig, MoodOption } from "@/types";
+
+export const MAX_UNSIGNED_POSTS_PER_DAY = 3;
+export const WHISPER_DURATION_MS = 48 * 60 * 60 * 1000;
 
 export const SAMPLE_POSTS: Post[] = [
     {
@@ -6,27 +9,45 @@ export const SAMPLE_POSTS: Post[] = [
         text: "Today was rough. My manager completely dismissed my idea in the meeting and took credit for it later. I just needed to get this off my chest.",
         mood: "😤",
         commentsEnabled: false,
+        hideIdentity: true,
+        authorId: null,
+        authorDisplayId: null,
         comments: [],
+        reactions: { hugs: 12, meToo: 5 },
         timestamp: Date.now() - 3600000 * 5,
-        anonymous: true,
     },
     {
         id: 2,
         text: "Feeling weirdly grateful today. A stranger held the door and smiled at me and it genuinely made my whole afternoon better. Small things matter.",
         mood: "🙂",
         commentsEnabled: true,
-        comments: [{ id: 1, text: "Love this energy 🌻", timestamp: Date.now() - 1800000 }],
+        hideIdentity: false,
+        authorId: "user_abc123",
+        authorDisplayId: "7382",
+        comments: [
+            {
+                id: 1,
+                text: "Love this energy 🌻",
+                timestamp: Date.now() - 1800000,
+                authorId: "user_def456",
+                authorDisplayId: "4519",
+                hideIdentity: false,
+            },
+        ],
+        reactions: { hugs: 24, meToo: 8 },
         timestamp: Date.now() - 3600000 * 12,
-        anonymous: false,
     },
     {
         id: 3,
         text: "I can't sleep. My brain won't stop replaying every embarrassing thing I've ever done. Why does 3am feel like a courtroom for your past self?",
         mood: "😐",
         commentsEnabled: true,
+        hideIdentity: true,
+        authorId: "user_ghi789",
+        authorDisplayId: "2091",
         comments: [],
+        reactions: { hugs: 7, meToo: 15 },
         timestamp: Date.now() - 3600000 * 24,
-        anonymous: true,
     },
 ];
 
@@ -76,4 +97,66 @@ export const MOOD_OPTIONS: MoodOption[] = [
     { emoji: "🌊", label: "Overwhelmed" },
     { emoji: "🌸", label: "Soft" },
     { emoji: "🌈", label: "Hopeful" },
+];
+
+export const MOCK_CURRENT_USER_ID = "user_current";
+
+export const SAMPLE_WHISPERS: Whisper[] = [
+    {
+        id: 1,
+        participantOneId: MOCK_CURRENT_USER_ID,
+        participantTwoId: "user_abc123",
+        participantOneDisplayId: "7382",
+        participantTwoDisplayId: "4519",
+        status: "active",
+        expiresAt: Date.now() + 36 * 60 * 60 * 1000,
+        extended: false,
+        requestedById: "user_abc123",
+        messages: [
+            { id: 1, senderId: "user_abc123", senderDisplayId: "4519", text: "Hey, I saw your comment about the late night thoughts. I totally get it.", timestamp: Date.now() - 3600000 * 2 },
+            { id: 2, senderId: MOCK_CURRENT_USER_ID, senderDisplayId: "7382", text: "Right? It's like 3am is when your brain decides to replay every cringy moment.", timestamp: Date.now() - 3600000 },
+            { id: 3, senderId: "user_abc123", senderDisplayId: "4519", text: "Exactly. I've started keeping a notebook by my bed. Sometimes writing it down helps.", timestamp: Date.now() - 1800000 },
+        ],
+        createdAt: Date.now() - 3600000 * 24,
+    },
+];
+
+export const SAMPLE_WHISPER_REQUESTS: Whisper[] = [
+    {
+        id: 2,
+        participantOneId: "user_def456",
+        participantTwoId: MOCK_CURRENT_USER_ID,
+        participantOneDisplayId: "2091",
+        participantTwoDisplayId: "7382",
+        status: "pending",
+        expiresAt: 0,
+        extended: false,
+        requestedById: "user_def456",
+        messages: [],
+        createdAt: Date.now() - 3600000,
+    },
+];
+
+export const SAMPLE_WHISPER_MEMORIES: WhisperMemory[] = [
+    {
+        id: 1,
+        whisperId: 3,
+        whisper: {
+            id: 3,
+            participantOneId: MOCK_CURRENT_USER_ID,
+            participantTwoId: "user_ghi789",
+            participantOneDisplayId: "7382",
+            participantTwoDisplayId: "8901",
+            status: "expired",
+            expiresAt: Date.now() - 3600000 * 48,
+            extended: true,
+            requestedById: MOCK_CURRENT_USER_ID,
+            messages: [
+                { id: 1, senderId: "user_ghi789", senderDisplayId: "8901", text: "Thanks for reaching out. It helped talking to someone.", timestamp: Date.now() - 3600000 * 96 },
+                { id: 2, senderId: MOCK_CURRENT_USER_ID, senderDisplayId: "7382", text: "Same here. Take care of yourself.", timestamp: Date.now() - 3600000 * 95 },
+            ],
+            createdAt: Date.now() - 3600000 * 120,
+        },
+        savedAt: Date.now() - 3600000 * 48,
+    },
 ];

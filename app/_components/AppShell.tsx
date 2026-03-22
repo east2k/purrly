@@ -2,40 +2,48 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import PostComposer from "./PostComposer";
-import PostCard from "./PostCard";
-import SelfCareCard from "./SelfCareCard";
-import { SAMPLE_POSTS, SELF_CARE_CONFIG } from "@/app/_constants";
-import type { Post, CareState, SelfCareKey } from "@/types";
+import { useUser, Show, SignInButton, UserButton } from "@clerk/nextjs";
+import PostComposer from "./Vent/PostComposer";
+import PostCard from "./Vent/PostCard";
+import SelfCareCard from "./SelfCare/SelfCareCard";
+import TabNav from "./TabNav";
+import SignupNudge from "./SignupNudge";
+import WhispersTab from "./Whispers/WhispersTab";
+import { SAMPLE_POSTS, SELF_CARE_CONFIG, MOCK_CURRENT_USER_ID } from "@/app/_constants";
+import type { Post, Comment, CareState, SelfCareKey } from "@/types";
 
-type Tab = "vent" | "care";
+type Tab = "vent" | "care" | "whispers";
 
 const AppShell = () => {
     const [tab, setTab] = useState<Tab>("vent");
     const [posts, setPosts] = useState<Post[]>(SAMPLE_POSTS);
     const [care, setCare] = useState<CareState>({ water: 3, sleep: 6 });
+    const { isSignedIn, user } = useUser();
 
-    const handlePost = (data: Omit<Post, "id" | "timestamp" | "comments">) => {
+    const handlePost = (data: Omit<Post, "id" | "timestamp" | "comments" | "reactions">) => {
         const newPost: Post = {
             ...data,
             id: Date.now(),
             comments: [],
+            reactions: { hugs: 0, meToo: 0 },
             timestamp: Date.now(),
         };
         setPosts([newPost, ...posts]);
     };
 
     const handleAddComment = (postId: number, text: string) => {
+        const newComment: Comment = {
+            id: Date.now(),
+            text,
+            timestamp: Date.now(),
+            authorId: user?.id ?? "unknown",
+            authorDisplayId: "7382",
+            hideIdentity: false,
+        };
         setPosts(
             posts.map((p) =>
                 p.id === postId
-                    ? {
-                          ...p,
-                          comments: [
-                              ...p.comments,
-                              { id: Date.now(), text, timestamp: Date.now() },
-                          ],
-                      }
+                    ? { ...p, comments: [...p.comments, newComment] }
                     : p,
             ),
         );
@@ -46,8 +54,8 @@ const AppShell = () => {
     };
 
     return (
-        <div className="max-w-[640px] mx-auto px-4 pb-24">
-            <header className="text-center py-8">
+        <div className="max-w-160 mx-auto px-4 pb-24">
+            <header className="relative text-center py-8">
                 <div className="flex items-center justify-center gap-3 mb-1">
                     <Image src="/logo.png" alt="Purrly logo" width={48} height={48} priority />
                     <h1 className="font-display font-bold text-[32px] tracking-tight text-sand-900">
@@ -57,24 +65,25 @@ const AppShell = () => {
                 <p className="text-sm text-sand-600 font-light">
                     curl up. let it out. take care of you.
                 </p>
+                <div className="absolute right-0 top-1/2 -translate-y-1/2">
+                    <Show when="signed-in">
+                        <UserButton />
+                    </Show>
+                    <Show when="signed-out">
+                        <SignInButton mode="modal">
+                            <button className="text-sm font-medium text-terracotta-400 hover:text-terracotta-500 transition-colors cursor-pointer">
+                                Sign in
+                            </button>
+                        </SignInButton>
+                    </Show>
+                </div>
             </header>
 
-            <nav className="flex gap-1 bg-sand-100 rounded-xl p-1 mb-7">
-                {(["vent", "care"] as const).map((t) => (
-                    <button
-                        key={t}
-                        onClick={() => setTab(t)}
-                        className={[
-                            "flex-1 py-2.5 rounded-[9px] text-sm font-medium transition-all duration-200 cursor-pointer border-none font-body",
-                            tab === t
-                                ? "bg-white text-sand-900 shadow-sm"
-                                : "bg-transparent text-sand-600 hover:text-sand-900",
-                        ].join(" ")}
-                    >
-                        {t === "vent" ? "🐾 Vent" : "🧸 Self Care"}
-                    </button>
-                ))}
-            </nav>
+            <TabNav
+                activeTab={tab}
+                onTabChange={setTab}
+                badges={{ whispers: true }}
+            />
 
             {tab === "vent" && (
                 <div>
@@ -100,31 +109,52 @@ const AppShell = () => {
             )}
 
             {tab === "care" && (
-                <div>
-                    <h2 className="font-display text-[22px] font-medium mb-1 text-sand-900">
-                        Daily Check-in
-                    </h2>
-                    <p className="text-sm text-sand-600 font-light mb-6">
-                        Small purrs of progress. You&apos;re doing great.
-                    </p>
-                    <div className="flex flex-col gap-3.5">
-                        {(Object.keys(SELF_CARE_CONFIG) as SelfCareKey[]).map((key) => (
-                            <SelfCareCard
-                                key={key}
-                                config={SELF_CARE_CONFIG[key]}
-                                value={care[key]}
-                                onChange={(v) => handleCareChange(key, v)}
-                            />
-                        ))}
-                    </div>
-                    <blockquote className="text-center rounded-2xl p-7 mt-7 bg-sand-100">
-                        <p className="font-display italic text-base text-sand-600 leading-relaxed">
-                            &ldquo;You don&apos;t have to be positive all the time. It&apos;s
-                            perfectly okay to feel sad, angry, frustrated, or anxious. Having
-                            feelings doesn&apos;t make you weak.&rdquo;
+                isSignedIn ? (
+                    <div>
+                        <h2 className="font-display text-[22px] font-medium mb-1 text-sand-900">
+                            Daily Check-in
+                        </h2>
+                        <p className="text-sm text-sand-600 font-light mb-6">
+                            Small purrs of progress. You&apos;re doing great.
                         </p>
-                    </blockquote>
-                </div>
+                        <div className="flex flex-col gap-3.5">
+                            {(Object.keys(SELF_CARE_CONFIG) as SelfCareKey[]).map((key) => (
+                                <SelfCareCard
+                                    key={key}
+                                    config={SELF_CARE_CONFIG[key]}
+                                    value={care[key]}
+                                    onChange={(v) => handleCareChange(key, v)}
+                                />
+                            ))}
+                        </div>
+                        <div className="text-center mt-6 py-3">
+                            <p className="text-sm text-sand-600">
+                                You&apos;ve checked in 5 days in a row 🐱
+                            </p>
+                        </div>
+                        <blockquote className="text-center rounded-2xl p-7 mt-4 bg-sand-100">
+                            <p className="font-display italic text-base text-sand-600 leading-relaxed">
+                                &ldquo;You don&apos;t have to be positive all the time. It&apos;s
+                                perfectly okay to feel sad, angry, frustrated, or anxious. Having
+                                feelings doesn&apos;t make you weak.&rdquo;
+                            </p>
+                        </blockquote>
+                    </div>
+                ) : (
+                    <div className="bg-white rounded-2xl border border-sand-300 shadow-card">
+                        <SignupNudge message="Sign up to start tracking your self-care. It takes 5 seconds, and your data stays yours. 🐱" />
+                    </div>
+                )
+            )}
+
+            {tab === "whispers" && (
+                isSignedIn ? (
+                    <WhispersTab currentUserId={user?.id ?? MOCK_CURRENT_USER_ID} />
+                ) : (
+                    <div className="bg-white rounded-2xl border border-sand-300 shadow-card">
+                        <SignupNudge message="Sign up to start whispering. Connect with someone who gets it. 💬" />
+                    </div>
+                )
             )}
         </div>
     );

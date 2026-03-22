@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Fraunces, DM_Sans } from "next/font/google";
+import { ClerkProvider } from "@clerk/nextjs";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -20,11 +21,13 @@ export const metadata: Metadata = {
 };
 
 const RootLayout = ({ children }: { children: React.ReactNode }) => (
-    <html suppressHydrationWarning lang="en" className={`${fraunces.variable} ${dmSans.variable}`}>
-        <body className="bg-sand-50 text-sand-900 font-body antialiased min-h-screen">
-            {children}
-        </body>
-    </html>
+    <ClerkProvider>
+        <html suppressHydrationWarning lang="en" className={`${fraunces.variable} ${dmSans.variable}`}>
+            <body className="bg-sand-50 text-sand-900 font-body antialiased min-h-screen">
+                {children}
+            </body>
+        </html>
+    </ClerkProvider>
 );
 
 export default RootLayout;

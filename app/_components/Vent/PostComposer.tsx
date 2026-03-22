@@ -1,28 +1,42 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { MOOD_OPTIONS } from "@/app/_constants";
+import { useUser } from "@clerk/nextjs";
+import { MOOD_OPTIONS, MAX_UNSIGNED_POSTS_PER_DAY } from "@/app/_constants";
 import type { Post } from "@/types";
 
 type PostComposerProps = {
-    onPost: (post: Omit<Post, "id" | "timestamp" | "comments">) => void;
+    onPost: (post: Omit<Post, "id" | "timestamp" | "comments" | "reactions">) => void;
 };
 
 const PostComposer = ({ onPost }: PostComposerProps) => {
     const [text, setText] = useState("");
     const [mood, setMood] = useState<string | null>(null);
     const [commentsEnabled, setCommentsEnabled] = useState(true);
-    const [anonymous, setAnonymous] = useState(true);
+    const [hideIdentity, setHideIdentity] = useState(true);
     const [showAllMoods, setShowAllMoods] = useState(false);
+    const [postsToday, setPostsToday] = useState(0);
     const textRef = useRef<HTMLTextAreaElement>(null);
+    const { isSignedIn, user } = useUser();
+
+    const isRateLimited = !isSignedIn && postsToday >= MAX_UNSIGNED_POSTS_PER_DAY;
+    const remainingPosts = MAX_UNSIGNED_POSTS_PER_DAY - postsToday;
 
     const visibleMoods = showAllMoods ? MOOD_OPTIONS : MOOD_OPTIONS.slice(0, 6);
 
     const handleSubmit = () => {
-        if (!text.trim()) return;
-        onPost({ text: text.trim(), mood, commentsEnabled, anonymous });
+        if (!text.trim() || isRateLimited) return;
+        onPost({
+            text: text.trim(),
+            mood,
+            commentsEnabled,
+            hideIdentity: isSignedIn ? hideIdentity : true,
+            authorId: isSignedIn && user ? user.id : null,
+            authorDisplayId: isSignedIn ? "7382" : null,
+        });
         setText("");
         setMood(null);
+        if (!isSignedIn) setPostsToday(postsToday + 1);
     };
 
     return (
@@ -38,7 +52,7 @@ const PostComposer = ({ onPost }: PostComposerProps) => {
 
             <textarea
                 ref={textRef}
-                className="w-full border border-sand-300 rounded-[10px] px-4 py-3.5 text-[15px] resize-y min-h-[100px] bg-sand-50 text-sand-900 outline-none focus:border-terracotta-400 transition-colors leading-relaxed font-body placeholder:text-sand-500"
+                className="w-full border border-sand-300 rounded-[10px] px-4 py-3.5 text-[15px] resize-y min-h-25 bg-sand-50 text-sand-900 outline-none focus:border-terracotta-400 transition-colors leading-relaxed font-body placeholder:text-sand-500"
                 placeholder="Let it out..."
                 value={text}
                 onChange={(e) => setText(e.target.value)}
@@ -78,28 +92,38 @@ const PostComposer = ({ onPost }: PostComposerProps) => {
                             type="checkbox"
                             checked={commentsEnabled}
                             onChange={() => setCommentsEnabled(!commentsEnabled)}
-                            className="accent-terracotta-400 w-[15px] h-[15px]"
+                            className="accent-terracotta-400 w-3.75 h-3.75"
                         />
                         Allow comments
                     </label>
-                    <label className="flex items-center gap-1.5 text-xs text-sand-600 cursor-pointer">
-                        <input
-                            type="checkbox"
-                            checked={anonymous}
-                            onChange={() => setAnonymous(!anonymous)}
-                            className="accent-terracotta-400 w-[15px] h-[15px]"
-                        />
-                        Post anonymously
-                    </label>
+                    {isSignedIn && (
+                        <label className="flex items-center gap-1.5 text-xs text-sand-600 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={hideIdentity}
+                                onChange={() => setHideIdentity(!hideIdentity)}
+                                className="accent-terracotta-400 w-3.75 h-3.75"
+                            />
+                            Hide my ID
+                        </label>
+                    )}
                 </div>
                 <button
                     onClick={handleSubmit}
-                    disabled={!text.trim()}
+                    disabled={!text.trim() || isRateLimited}
                     className="px-7 py-2.5 bg-terracotta-400 text-white text-sm font-semibold rounded-[10px] disabled:opacity-45 hover:bg-terracotta-500 hover:-translate-y-px transition-all cursor-pointer font-body"
                 >
                     Post
                 </button>
             </div>
+
+            {!isSignedIn && postsToday > 0 && (
+                <p className="text-xs text-sand-500 mt-3 text-center">
+                    {isRateLimited
+                        ? "You've reached today's limit. Sign in to post more."
+                        : `${remainingPosts} post${remainingPosts === 1 ? "" : "s"} remaining today`}
+                </p>
+            )}
         </div>
     );
 };
