@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { ArrowLeft } from "lucide-react";
 import CountdownTimer from "./CountdownTimer";
 import ReportButton from "@/app/_components/ReportButton";
+import { getPusherClient } from "@/lib/pusher";
 import type { ApiWhisper, ApiWhisperMessage } from "@/types";
 
 type WhisperThreadProps = {
@@ -36,6 +37,21 @@ const WhisperThread = ({ whisper, currentUserId, onBack, onExtend }: WhisperThre
     }, [whisper.id]);
 
     useEffect(() => {
+        const client = getPusherClient();
+        const channel = client.subscribe(`whisper-${whisper.id}`);
+        channel.bind("new-message", (msg: ApiWhisperMessage) => {
+            setMessages((prev) => {
+                if (prev.some((m) => m.id === msg.id)) return prev;
+                return [...prev, msg];
+            });
+        });
+        return () => {
+            channel.unbind_all();
+            client.unsubscribe(`whisper-${whisper.id}`);
+        };
+    }, [whisper.id]);
+
+    useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [messages]);
 
@@ -52,7 +68,7 @@ const WhisperThread = ({ whisper, currentUserId, onBack, onExtend }: WhisperThre
 
         if (res.ok) {
             const newMsg: ApiWhisperMessage = await res.json();
-            setMessages((prev) => [...prev, newMsg]);
+            setMessages((prev) => prev.some((m) => m.id === newMsg.id) ? prev : [...prev, newMsg]);
         }
     };
 

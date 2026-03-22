@@ -3,6 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { whisperMessages, whispers, users } from "@/lib/schema";
 import { eq, or, and, asc } from "drizzle-orm";
+import { pusherServer } from "@/lib/pusher";
 
 type RouteParams = { params: Promise<{ id: string }> };
 
@@ -91,8 +92,9 @@ export const POST = async (request: NextRequest, { params }: RouteParams) => {
         columns: { displayId: true },
     });
 
-    return NextResponse.json({
-        ...message,
-        senderDisplayId: user?.displayId ?? null,
-    }, { status: 201 });
+    const payload = { ...message, senderDisplayId: user?.displayId ?? null };
+
+    await pusherServer.trigger(`whisper-${whisperId}`, "new-message", payload);
+
+    return NextResponse.json(payload, { status: 201 });
 };
