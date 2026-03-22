@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Fraunces, DM_Sans } from "next/font/google";
-import { ClerkProvider } from "@clerk/nextjs";
+import { ClerkProvider, Show, SignInButton, UserButton } from "@clerk/nextjs";
+import Image from "next/image";
+import TabNav from "@/app/_components/TabNav";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -24,7 +26,33 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => (
     <ClerkProvider>
         <html suppressHydrationWarning lang="en" className={`${fraunces.variable} ${dmSans.variable}`}>
             <body className="bg-sand-50 text-sand-900 font-body antialiased min-h-screen">
-                {children}
+                <div className="max-w-160 mx-auto px-4 pb-24">
+                    <header className="relative text-center py-8">
+                        <div className="flex items-center justify-center gap-3 mb-1">
+                            <Image src="/logo.png" alt="Purrly logo" width={48} height={48} priority />
+                            <h1 className="font-display font-bold text-[32px] tracking-tight text-sand-900">
+                                purr<span className="text-terracotta-400">ly</span>
+                            </h1>
+                        </div>
+                        <p className="text-sm text-sand-600 font-light">
+                            curl up. let it out. take care of you.
+                        </p>
+                        <div className="absolute right-0 top-1/2 -translate-y-1/2">
+                            <Show when="signed-in">
+                                <UserButton />
+                            </Show>
+                            <Show when="signed-out">
+                                <SignInButton mode="modal">
+                                    <button className="text-sm font-medium text-terracotta-400 hover:text-terracotta-500 transition-colors cursor-pointer">
+                                        Sign in
+                                    </button>
+                                </SignInButton>
+                            </Show>
+                        </div>
+                    </header>
+                    <TabNav badges={{ "/whispers": true }} />
+                    {children}
+                </div>
             </body>
         </html>
     </ClerkProvider>
