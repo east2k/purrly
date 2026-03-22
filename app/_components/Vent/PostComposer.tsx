@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import { useUser } from "@clerk/nextjs";
 import { MOOD_OPTIONS, MAX_UNSIGNED_POSTS_PER_DAY } from "@/app/_constants";
+import { useIdentityPreference } from "@/app/_context/IdentityPreferenceContext";
 
 type PostData = {
     text: string;
@@ -19,11 +20,11 @@ const PostComposer = ({ onPost }: PostComposerProps) => {
     const [text, setText] = useState("");
     const [mood, setMood] = useState<string | null>(null);
     const [commentsEnabled, setCommentsEnabled] = useState(true);
-    const [hideIdentity, setHideIdentity] = useState(true);
     const [showAllMoods, setShowAllMoods] = useState(false);
     const [postsToday, setPostsToday] = useState(0);
     const textRef = useRef<HTMLTextAreaElement>(null);
     const { isSignedIn } = useUser();
+    const { hideIdentity } = useIdentityPreference();
 
     const isRateLimited = !isSignedIn && postsToday >= MAX_UNSIGNED_POSTS_PER_DAY;
     const remainingPosts = MAX_UNSIGNED_POSTS_PER_DAY - postsToday;
@@ -100,17 +101,6 @@ const PostComposer = ({ onPost }: PostComposerProps) => {
                         />
                         Allow comments
                     </label>
-                    {isSignedIn && (
-                        <label className="flex items-center gap-1.5 text-xs text-sand-600 cursor-pointer">
-                            <input
-                                type="checkbox"
-                                checked={hideIdentity}
-                                onChange={() => setHideIdentity(!hideIdentity)}
-                                className="accent-terracotta-400 w-3.75 h-3.75"
-                            />
-                            Hide my ID
-                        </label>
-                    )}
                 </div>
                 <button
                     onClick={handleSubmit}

@@ -3,6 +3,8 @@ import { Fraunces, DM_Sans } from "next/font/google";
 import { ClerkProvider, Show, SignInButton, UserButton } from "@clerk/nextjs";
 import Image from "next/image";
 import TabNav from "@/app/_components/TabNav";
+import IdentityToggle from "@/app/_components/IdentityToggle";
+import { IdentityPreferenceProvider } from "@/app/_context/IdentityPreferenceContext";
 import "./globals.css";
 
 const fraunces = Fraunces({
@@ -26,6 +28,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => (
     <ClerkProvider>
         <html suppressHydrationWarning lang="en" className={`${fraunces.variable} ${dmSans.variable}`}>
             <body className="bg-sand-50 text-sand-900 font-body antialiased min-h-screen">
+                <IdentityPreferenceProvider>
                 <div className="max-w-160 mx-auto px-4 pb-24">
                     <header className="relative text-center py-8">
                         <div className="flex items-center justify-center gap-3 mb-1">
@@ -37,7 +40,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => (
                         <p className="text-sm text-sand-600 font-light">
                             curl up. let it out. take care of you.
                         </p>
-                        <div className="absolute right-0 top-1/2 -translate-y-1/2">
+                        <div className="absolute right-0 top-1/2 -translate-y-1/2 flex items-center gap-3">
                             <Show when="signed-in">
                                 <UserButton />
                             </Show>
@@ -51,8 +54,10 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => (
                         </div>
                     </header>
                     <TabNav />
+                    <IdentityToggle />
                     {children}
                 </div>
+                </IdentityPreferenceProvider>
             </body>
         </html>
     </ClerkProvider>

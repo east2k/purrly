@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { ApiComment } from "@/types";
 
-const usePostComments = (postId: number, initialCount: number) => {
+const usePostComments = (postId: number, initialCount: number, hideIdentity: boolean) => {
     const [comments, setComments] = useState<ApiComment[]>([]);
     const [commentsLoaded, setCommentsLoaded] = useState(false);
     const [showComments, setShowComments] = useState(false);
@@ -29,7 +29,7 @@ const usePostComments = (postId: number, initialCount: number) => {
         const res = await fetch(`/api/posts/${postId}/comments`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ text: commentText.trim(), hideIdentity: false }),
+            body: JSON.stringify({ text: commentText.trim(), hideIdentity }),
         });
         setSubmitting(false);
         if (!res.ok) return;

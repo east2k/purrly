@@ -6,6 +6,7 @@ import { useUser } from "@clerk/nextjs";
 import { timeAgo } from "@/app/_utils/time";
 import { getPostDisplayName, getCommentDisplayName } from "@/app/_utils/identity";
 import usePostComments from "@/app/_hooks/usePostComments";
+import { useIdentityPreference } from "@/app/_context/IdentityPreferenceContext";
 import ReactionButtons from "./ReactionButtons";
 import ReportButton from "../ReportButton";
 import SignupNudge from "../SignupNudge";
@@ -21,6 +22,7 @@ type PostCardProps = {
 const PostCard = ({ post, animationDelay = "0s", onHide, onUnhide }: PostCardProps) => {
     const [whisperPrompt, setWhisperPrompt] = useState<number | null>(null);
     const { isSignedIn, user } = useUser();
+    const { hideIdentity } = useIdentityPreference();
     const {
         comments,
         showComments,
@@ -30,7 +32,7 @@ const PostCard = ({ post, animationDelay = "0s", onHide, onUnhide }: PostCardPro
         count,
         toggleComments,
         submitComment,
-    } = usePostComments(post.id, post.commentCount);
+    } = usePostComments(post.id, post.commentCount, hideIdentity);
 
     const isAuthor = !!user && post.authorId === user.id;
     const timestamp = new Date(post.createdAt).getTime();
