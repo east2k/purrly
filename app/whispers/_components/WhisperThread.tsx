@@ -15,6 +15,7 @@ type WhisperThreadProps = {
 
 const WhisperThread = ({ whisper, currentUserId, onBack, onExtend }: WhisperThreadProps) => {
     const [messages, setMessages] = useState<ApiWhisperMessage[]>([]);
+    const [loadingMessages, setLoadingMessages] = useState(true);
     const [messageText, setMessageText] = useState("");
     const [extending, setExtending] = useState(false);
     const [extended, setExtended] = useState(whisper.extended);
@@ -29,6 +30,7 @@ const WhisperThread = ({ whisper, currentUserId, onBack, onExtend }: WhisperThre
         const load = async () => {
             const res = await fetch(`/api/whispers/${whisper.id}/messages`);
             if (res.ok) setMessages(await res.json());
+            setLoadingMessages(false);
         };
         load();
     }, [whisper.id]);
@@ -90,7 +92,16 @@ const WhisperThread = ({ whisper, currentUserId, onBack, onExtend }: WhisperThre
             </div>
 
             <div className="flex-1 space-y-3 mb-4 overflow-y-auto">
-                {messages.map((m) => {
+                {loadingMessages ? (
+                    <>
+                        {[false, true, false, true].map((isMine, i) => (
+                            <div key={i} className={`flex ${isMine ? "justify-end" : "justify-start"} animate-pulse`}>
+                                <div className={`h-9 rounded-2xl bg-sand-200 ${isMine ? "w-2/5 rounded-br-sm" : "w-3/5 rounded-bl-sm"}`} />
+                            </div>
+                        ))}
+                    </>
+                ) : null}
+                {!loadingMessages && messages.map((m) => {
                     const isMine = m.senderId === currentUserId;
                     return (
                         <div key={m.id} className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
@@ -115,6 +126,9 @@ const WhisperThread = ({ whisper, currentUserId, onBack, onExtend }: WhisperThre
                         </div>
                     );
                 })}
+                {!loadingMessages && messages.length === 0 && (
+                    <p className="text-center text-sm text-sand-400 py-8">No messages yet. Say something gentle 🌸</p>
+                )}
                 <div ref={bottomRef} />
             </div>
 

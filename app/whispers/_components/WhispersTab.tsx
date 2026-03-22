@@ -64,7 +64,17 @@ const WhispersTab = ({ currentUserId }: WhispersTabProps) => {
             </div>
 
             {loading ? (
-                <p className="text-center py-12 text-sm text-sand-500">Loading...</p>
+                <div className="space-y-3">
+                    {[0, 1, 2].map((i) => (
+                        <div key={i} className="bg-white rounded-2xl px-5 py-4 border border-sand-200 shadow-card animate-pulse">
+                            <div className="flex justify-between items-center mb-2">
+                                <div className="h-3.5 w-36 bg-sand-200 rounded-full" />
+                                <div className="h-3 w-14 bg-sand-100 rounded-full" />
+                            </div>
+                            <div className="h-3 w-3/4 bg-sand-100 rounded-full" />
+                        </div>
+                    ))}
+                </div>
             ) : (
                 <>
                     {subTab === "active" && (
