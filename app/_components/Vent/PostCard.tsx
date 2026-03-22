@@ -162,7 +162,9 @@ const PostCard = ({ post, animationDelay = "0s", onHide, onUnhide }: PostCardPro
                                         )}
                                     </div>
                                 )}
-                                <ReportButton contentType="COMMENT" contentId={c.id} />
+                                {c.authorId !== user?.id && (
+                                    <ReportButton contentType="COMMENT" contentId={c.id} />
+                                )}
                             </div>
                         </div>
                     ))}

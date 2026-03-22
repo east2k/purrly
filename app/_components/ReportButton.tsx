@@ -21,13 +21,9 @@ const ReportButton = ({ contentType, contentId }: ReportButtonProps) => {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ contentType, contentId, reason: reason.trim() }),
         });
-        if (!res.ok) return;
+        if (!res.ok && res.status !== 409) return;
         setSubmitted(true);
-        setTimeout(() => {
-            setShowForm(false);
-            setSubmitted(false);
-            setReason("");
-        }, 2000);
+        setShowForm(false);
     };
 
     if (submitted) {
