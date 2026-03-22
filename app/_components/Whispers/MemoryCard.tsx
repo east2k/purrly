@@ -1,10 +1,10 @@
 "use client";
 
 import { UserRound } from "lucide-react";
-import type { WhisperMemory } from "@/types";
+import type { ApiWhisperMemory } from "@/types";
 
 type MemoryCardProps = {
-    memory: WhisperMemory;
+    memory: ApiWhisperMemory;
     currentUserId: string;
     onReconnect: (memoryId: number) => void;
 };
@@ -12,10 +12,10 @@ type MemoryCardProps = {
 const MemoryCard = ({ memory, currentUserId, onReconnect }: MemoryCardProps) => {
     const otherDisplayId =
         memory.whisper.participantOneId === currentUserId
-            ? memory.whisper.participantTwoDisplayId
-            : memory.whisper.participantOneDisplayId;
+            ? memory.whisper.participantTwo.displayId
+            : memory.whisper.participantOne.displayId;
 
-    const lastMessage = memory.whisper.messages[memory.whisper.messages.length - 1];
+    const lastMessage = memory.whisper.messages[0];
     const savedDate = new Date(memory.savedAt).toLocaleDateString(undefined, {
         month: "short",
         day: "numeric",

@@ -3,10 +3,11 @@
 import { useUser } from "@clerk/nextjs";
 import WhispersTab from "@/app/_components/Whispers/WhispersTab";
 import SignupNudge from "@/app/_components/SignupNudge";
-import { MOCK_CURRENT_USER_ID } from "@/app/_constants";
 
 const WhispersPage = () => {
-    const { isSignedIn, user } = useUser();
+    const { isSignedIn, isLoaded, user } = useUser();
+
+    if (!isLoaded) return null;
 
     if (!isSignedIn) {
         return (
@@ -16,7 +17,7 @@ const WhispersPage = () => {
         );
     }
 
-    return <WhispersTab currentUserId={user?.id ?? MOCK_CURRENT_USER_ID} />;
+    return <WhispersTab currentUserId={user!.id} />;
 };
 
 export default WhispersPage;

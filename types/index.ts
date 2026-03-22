@@ -79,6 +79,43 @@ export type ReconnectRequest = {
     createdAt: number;
 };
 
+export type ApiWhisperMessage = {
+    id: number;
+    senderId: string;
+    senderDisplayId: string | null;
+    text: string;
+    createdAt: string;
+};
+
+export type ApiWhisper = {
+    id: number;
+    participantOneId: string;
+    participantTwoId: string;
+    participantOne: { displayId: string | null };
+    participantTwo: { displayId: string | null };
+    status: "PENDING" | "ACTIVE" | "EXPIRED";
+    expiresAt: string | null;
+    extended: boolean;
+    requestedById: string;
+    createdAt: string;
+    updatedAt: string;
+    messages: { id: number; senderId: string; text: string; createdAt: string }[];
+};
+
+export type ApiWhisperMemory = {
+    id: number;
+    whisperId: number;
+    savedAt: string;
+    whisper: {
+        id: number;
+        participantOneId: string;
+        participantTwoId: string;
+        participantOne: { displayId: string | null };
+        participantTwo: { displayId: string | null };
+        messages: { text: string; createdAt: string }[];
+    };
+};
+
 export type ReportContentType = "POST" | "COMMENT" | "WHISPER_MESSAGE";
 export type ReportStatus = "pending" | "reviewed" | "actioned";
 

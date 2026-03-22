@@ -8,8 +8,10 @@ import { SELF_CARE_CONFIG } from "@/app/_constants";
 import type { SelfCareKey } from "@/types";
 
 const CarePage = () => {
-    const { isSignedIn } = useUser();
+    const { isSignedIn, isLoaded } = useUser();
     const { care, streak, loading, handleCareChange } = useSelfCare();
+
+    if (!isLoaded) return null;
 
     if (!isSignedIn) {
         return (

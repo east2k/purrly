@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
-import { whispers, users } from "@/lib/schema";
+import { whispers } from "@/lib/schema";
 import { eq, or, and, desc } from "drizzle-orm";
-import { WHISPER_DURATION_MS } from "@/app/_constants";
 
 export const GET = async () => {
     const { userId } = await auth();
@@ -19,7 +18,7 @@ export const GET = async () => {
         with: {
             participantOne: { columns: { displayId: true } },
             participantTwo: { columns: { displayId: true } },
-            messages: { orderBy: (m, { asc }) => [asc(m.createdAt)], limit: 1 },
+            messages: { orderBy: (m, { desc }) => [desc(m.createdAt)], limit: 1 },
         },
         orderBy: [desc(whispers.updatedAt)],
     });

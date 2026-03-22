@@ -4,8 +4,8 @@ import { UserRound } from "lucide-react";
 import { timeAgo } from "@/app/_utils/time";
 
 type WhisperRequestCardProps = {
-    displayId: string;
-    createdAt: number;
+    displayId: string | null;
+    createdAt: string;
     onAccept: () => void;
     onDecline: () => void;
 };
@@ -22,7 +22,7 @@ const WhisperRequestCard = ({ displayId, createdAt, onAccept, onDecline }: Whisp
                 </p>
                 <p className="text-xs text-sand-500">wants to whisper with you</p>
             </div>
-            <span className="text-xs text-sand-500 ml-auto">{timeAgo(createdAt)}</span>
+            <span className="text-xs text-sand-500 ml-auto">{timeAgo(new Date(createdAt).getTime())}</span>
         </div>
         <div className="flex gap-2">
             <button

@@ -1,39 +1,64 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ArrowLeft } from "lucide-react";
 import CountdownTimer from "./CountdownTimer";
 import ReportButton from "../ReportButton";
-import type { Whisper } from "@/types";
+import type { ApiWhisper, ApiWhisperMessage } from "@/types";
 
 type WhisperThreadProps = {
-    whisper: Whisper;
+    whisper: ApiWhisper;
     currentUserId: string;
     onBack: () => void;
+    onExtend: () => Promise<boolean>;
 };
 
-const WhisperThread = ({ whisper, currentUserId, onBack }: WhisperThreadProps) => {
+const WhisperThread = ({ whisper, currentUserId, onBack, onExtend }: WhisperThreadProps) => {
+    const [messages, setMessages] = useState<ApiWhisperMessage[]>([]);
     const [messageText, setMessageText] = useState("");
-    const [messages, setMessages] = useState(whisper.messages);
+    const [extending, setExtending] = useState(false);
+    const [extended, setExtended] = useState(whisper.extended);
+    const bottomRef = useRef<HTMLDivElement>(null);
 
     const otherDisplayId =
         whisper.participantOneId === currentUserId
-            ? whisper.participantTwoDisplayId
-            : whisper.participantOneDisplayId;
+            ? whisper.participantTwo.displayId
+            : whisper.participantOne.displayId;
 
-    const handleSend = () => {
+    useEffect(() => {
+        const load = async () => {
+            const res = await fetch(`/api/whispers/${whisper.id}/messages`);
+            if (res.ok) setMessages(await res.json());
+        };
+        load();
+    }, [whisper.id]);
+
+    useEffect(() => {
+        bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, [messages]);
+
+    const handleSend = async () => {
         if (!messageText.trim()) return;
-        setMessages([
-            ...messages,
-            {
-                id: Date.now(),
-                senderId: currentUserId,
-                senderDisplayId: "7382",
-                text: messageText.trim(),
-                timestamp: Date.now(),
-            },
-        ]);
+        const text = messageText.trim();
         setMessageText("");
+
+        const res = await fetch(`/api/whispers/${whisper.id}/messages`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text }),
+        });
+
+        if (res.ok) {
+            const newMsg: ApiWhisperMessage = await res.json();
+            setMessages((prev) => [...prev, newMsg]);
+        }
+    };
+
+    const handleExtend = async () => {
+        setExtending(true);
+        const ok = await onExtend();
+        if (ok) setExtended(true);
+        setExtending(false);
     };
 
     return (
@@ -49,11 +74,17 @@ const WhisperThread = ({ whisper, currentUserId, onBack }: WhisperThreadProps) =
                     <p className="text-sm font-semibold text-sand-900">
                         Purrlynonymous-{otherDisplayId}
                     </p>
-                    <CountdownTimer expiresAt={whisper.expiresAt} />
+                    {whisper.expiresAt && (
+                        <CountdownTimer expiresAt={new Date(whisper.expiresAt).getTime()} />
+                    )}
                 </div>
-                {!whisper.extended && (
-                    <button className="text-xs text-terracotta-400 hover:text-terracotta-500 transition-colors cursor-pointer font-body">
-                        Request more time
+                {!extended && (
+                    <button
+                        onClick={handleExtend}
+                        disabled={extending}
+                        className="text-xs text-terracotta-400 hover:text-terracotta-500 transition-colors cursor-pointer font-body disabled:opacity-50"
+                    >
+                        {extending ? "Requesting..." : "Request more time"}
                     </button>
                 )}
             </div>
@@ -62,10 +93,7 @@ const WhisperThread = ({ whisper, currentUserId, onBack }: WhisperThreadProps) =
                 {messages.map((m) => {
                     const isMine = m.senderId === currentUserId;
                     return (
-                        <div
-                            key={m.id}
-                            className={`flex ${isMine ? "justify-end" : "justify-start"}`}
-                        >
+                        <div key={m.id} className={`flex ${isMine ? "justify-end" : "justify-start"}`}>
                             <div
                                 className={[
                                     "max-w-[75%] px-4 py-2.5 rounded-2xl",
@@ -77,16 +105,17 @@ const WhisperThread = ({ whisper, currentUserId, onBack }: WhisperThreadProps) =
                                 <p className="text-sm leading-relaxed">{m.text}</p>
                                 <div className={`flex items-center gap-2 mt-1 ${isMine ? "justify-end" : "justify-start"}`}>
                                     <span className={`text-[10px] ${isMine ? "text-white/60" : "text-sand-500"}`}>
-                                        {new Date(m.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                                        {new Date(m.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                                     </span>
                                     {!isMine && (
-                                        <ReportButton contentType="whisper_message" contentId={m.id} />
+                                        <ReportButton contentType="WHISPER_MESSAGE" contentId={m.id} />
                                     )}
                                 </div>
                             </div>
                         </div>
                     );
                 })}
+                <div ref={bottomRef} />
             </div>
 
             <div className="flex gap-2">
