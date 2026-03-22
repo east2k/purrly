@@ -9,7 +9,7 @@ import type { SelfCareKey } from "@/types";
 
 const CarePage = () => {
     const { isSignedIn } = useUser();
-    const { care, handleCareChange } = useSelfCare();
+    const { care, streak, loading, handleCareChange } = useSelfCare();
 
     if (!isSignedIn) {
         return (
@@ -37,11 +37,17 @@ const CarePage = () => {
                     />
                 ))}
             </div>
-            <div className="text-center mt-6 py-3">
-                <p className="text-sm text-sand-600">
-                    You&apos;ve checked in 5 days in a row 🐱
-                </p>
-            </div>
+            {!loading && (
+                <div className="text-center mt-6 py-3">
+                    <p className="text-sm text-sand-600">
+                        {streak > 1
+                            ? `You've checked in ${streak} days in a row 🐱`
+                            : streak === 1
+                                ? "You checked in today 🐱"
+                                : "Start your streak — check in today 🐱"}
+                    </p>
+                </div>
+            )}
             <blockquote className="text-center rounded-2xl p-7 mt-4 bg-sand-100">
                 <p className="font-display italic text-base text-sand-600 leading-relaxed">
                     &ldquo;You don&apos;t have to be positive all the time. It&apos;s
