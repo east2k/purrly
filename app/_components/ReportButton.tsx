@@ -9,10 +9,15 @@ type ReportButtonProps = {
     contentId: number;
 };
 
+const reportKey = (contentType: ReportContentType, contentId: number) =>
+    `purrly_reported_${contentType}_${contentId}`;
+
 const ReportButton = ({ contentType, contentId }: ReportButtonProps) => {
     const [showForm, setShowForm] = useState(false);
     const [reason, setReason] = useState("");
-    const [submitted, setSubmitted] = useState(false);
+    const [submitted, setSubmitted] = useState(
+        () => typeof window !== "undefined" && !!localStorage.getItem(reportKey(contentType, contentId)),
+    );
 
     const handleSubmit = async () => {
         if (!reason.trim()) return;
@@ -22,6 +27,7 @@ const ReportButton = ({ contentType, contentId }: ReportButtonProps) => {
             body: JSON.stringify({ contentType, contentId, reason: reason.trim() }),
         });
         if (!res.ok && res.status !== 409) return;
+        localStorage.setItem(reportKey(contentType, contentId), "true");
         setSubmitted(true);
         setShowForm(false);
     };
