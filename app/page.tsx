@@ -18,6 +18,8 @@ const VentPage = () => {
         customDate,
         availableFilters,
         handlePost,
+        handleHidePost,
+        handleUnhidePost,
         handleFilterChange,
         handleTimeRangeChange,
         handleDatePick,
@@ -50,57 +52,61 @@ const VentPage = () => {
                 </div>
             </div>
 
-            <div className="flex gap-1.5 mb-4 items-center">
-                {TIME_RANGE_OPTIONS.map((t) => (
-                    <button
-                        key={t.value}
-                        onClick={() => handleTimeRangeChange(t.value)}
-                        className={[
-                            "px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all cursor-pointer border font-body",
-                            timeRange === t.value
-                                ? "bg-sand-900 border-sand-900 text-white"
-                                : "bg-white border-sand-200 text-sand-500 hover:border-sand-400",
-                        ].join(" ")}
-                    >
-                        {t.label}
-                    </button>
-                ))}
+            {filter !== "hidden" && (
+                <div className="flex gap-1.5 mb-4 items-center">
+                    {TIME_RANGE_OPTIONS.map((t) => (
+                        <button
+                            key={t.value}
+                            onClick={() => handleTimeRangeChange(t.value)}
+                            className={[
+                                "px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all cursor-pointer border font-body",
+                                timeRange === t.value
+                                    ? "bg-sand-900 border-sand-900 text-white"
+                                    : "bg-white border-sand-200 text-sand-500 hover:border-sand-400",
+                            ].join(" ")}
+                        >
+                            {t.label}
+                        </button>
+                    ))}
 
-                <div className="relative">
-                    <button
-                        onClick={() => dateInputRef.current?.showPicker()}
-                        className={[
-                            "flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all cursor-pointer border font-body",
-                            timeRange === "custom"
-                                ? "bg-sand-900 border-sand-900 text-white"
-                                : "bg-white border-sand-200 text-sand-500 hover:border-sand-400",
-                        ].join(" ")}
-                    >
-                        <CalendarDays size={12} />
-                        {timeRange === "custom" && customDate
-                            ? formatCustomDate(customDate)
-                            : "Pick date"}
-                    </button>
-                    <input
-                        ref={dateInputRef}
-                        type="date"
-                        className="absolute top-0 left-0 w-0 h-0 opacity-0 pointer-events-none"
-                        value={customDate ?? ""}
-                        onChange={(e) => handleDatePick(e.target.value)}
-                        max={new Date().toISOString().split("T")[0]}
-                    />
+                    <div className="relative">
+                        <button
+                            onClick={() => dateInputRef.current?.showPicker()}
+                            className={[
+                                "flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all cursor-pointer border font-body",
+                                timeRange === "custom"
+                                    ? "bg-sand-900 border-sand-900 text-white"
+                                    : "bg-white border-sand-200 text-sand-500 hover:border-sand-400",
+                            ].join(" ")}
+                        >
+                            <CalendarDays size={12} />
+                            {timeRange === "custom" && customDate
+                                ? formatCustomDate(customDate)
+                                : "Pick date"}
+                        </button>
+                        <input
+                            ref={dateInputRef}
+                            type="date"
+                            className="absolute top-0 left-0 w-0 h-0 opacity-0 pointer-events-none"
+                            value={customDate ?? ""}
+                            onChange={(e) => handleDatePick(e.target.value)}
+                            max={new Date().toISOString().split("T")[0]}
+                        />
+                    </div>
                 </div>
-            </div>
+            )}
 
             {loading ? (
                 <p className="text-center py-12 text-sm text-sand-500">Loading...</p>
             ) : posts.length === 0 ? (
                 <p className="text-center py-12 text-sm text-sand-500">
-                    {filter === "myPosts"
-                        ? "You haven\u2019t posted anything yet. Go ahead, let it out. \ud83d\udc31"
-                        : timeRange === "custom" && customDate
-                            ? `No posts on ${formatCustomDate(customDate)}.`
-                            : "Nothing here yet. You\u2019re safe to go first. \ud83d\udc31"}
+                    {filter === "hidden"
+                        ? "No hidden posts."
+                        : filter === "myPosts"
+                            ? "You haven\u2019t posted anything yet. Go ahead, let it out. \ud83d\udc31"
+                            : timeRange === "custom" && customDate
+                                ? `No posts on ${formatCustomDate(customDate)}.`
+                                : "Nothing here yet. You\u2019re safe to go first. \ud83d\udc31"}
                 </p>
             ) : (
                 <>
@@ -109,6 +115,8 @@ const VentPage = () => {
                             key={p.id}
                             post={p}
                             animationDelay={`${i * 0.05}s`}
+                            onHide={handleHidePost}
+                            onUnhide={handleUnhidePost}
                         />
                     ))}
                     {hasMore && (

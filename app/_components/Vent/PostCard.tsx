@@ -12,6 +12,8 @@ import type { ApiPost, ApiComment } from "@/types";
 type PostCardProps = {
     post: ApiPost;
     animationDelay?: string;
+    onHide?: (postId: number) => void;
+    onUnhide?: (postId: number) => void;
 };
 
 const getDisplayName = (
@@ -28,14 +30,21 @@ const getCommentDisplayName = (comment: ApiComment) => {
     return `Purrlynonymous-${comment.authorDisplayId}`;
 };
 
-const PostCard = ({ post, animationDelay = "0s" }: PostCardProps) => {
+const PostCard = ({ post, animationDelay = "0s", onHide, onUnhide }: PostCardProps) => {
     const [showComments, setShowComments] = useState(false);
     const [comments, setComments] = useState<ApiComment[]>([]);
     const [commentsLoaded, setCommentsLoaded] = useState(false);
     const [commentText, setCommentText] = useState("");
     const [whisperPrompt, setWhisperPrompt] = useState<number | null>(null);
     const [localCommentCount, setLocalCommentCount] = useState(Number(post.commentCount));
-    const { isSignedIn } = useUser();
+    const { isSignedIn, user } = useUser();
+
+    const isAuthor = !!user && post.authorId === user.id;
+
+    const handleHide = async () => {
+        const res = await fetch(`/api/posts/${post.id}`, { method: "DELETE" });
+        if (res.ok) onHide?.(post.id);
+    };
 
     const loadComments = async () => {
         if (commentsLoaded) return;
@@ -96,7 +105,25 @@ const PostCard = ({ post, animationDelay = "0s" }: PostCardProps) => {
                 </div>
                 <div className="flex items-center gap-2">
                     <span className="text-xs text-sand-500">{timeAgo(timestamp)}</span>
-                    <ReportButton contentType="POST" contentId={post.id} />
+                    {isAuthor ? (
+                        post.deletedAt ? (
+                            <button
+                                onClick={() => onUnhide?.(post.id)}
+                                className="text-[11px] text-sand-400 hover:text-terracotta-400 transition-colors cursor-pointer font-body"
+                            >
+                                Unhide
+                            </button>
+                        ) : (
+                            <button
+                                onClick={handleHide}
+                                className="text-[11px] text-sand-400 hover:text-red-400 transition-colors cursor-pointer font-body"
+                            >
+                                Hide
+                            </button>
+                        )
+                    ) : (
+                        <ReportButton contentType="POST" contentId={post.id} />
+                    )}
                 </div>
             </div>
 

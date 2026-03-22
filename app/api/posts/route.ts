@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { posts, users } from "@/lib/schema";
-import { desc, eq, isNull, sql, and, gte, lte } from "drizzle-orm";
+import { desc, eq, isNull, isNotNull, sql, and, gte, lte } from "drizzle-orm";
 
 export const GET = async (request: NextRequest) => {
     const { searchParams } = request.nextUrl;
@@ -12,19 +12,18 @@ export const GET = async (request: NextRequest) => {
     const to = searchParams.get("to");
     const sort = searchParams.get("sort") ?? "recent";
     const authorOnly = searchParams.get("mine") === "true";
+    const hiddenOnly = searchParams.get("hidden") === "true";
 
     const { userId } = await auth();
 
-    const conditions = [isNull(posts.deletedAt)];
+    const conditions = hiddenOnly && userId
+        ? [isNotNull(posts.deletedAt), eq(posts.authorId, userId)]
+        : [isNull(posts.deletedAt)];
 
-    if (from) {
-        conditions.push(gte(posts.createdAt, new Date(Number(from))));
-    }
-    if (to) {
-        conditions.push(lte(posts.createdAt, new Date(Number(to))));
-    }
-    if (authorOnly && userId) {
-        conditions.push(eq(posts.authorId, userId));
+    if (!hiddenOnly) {
+        if (from) conditions.push(gte(posts.createdAt, new Date(Number(from))));
+        if (to) conditions.push(lte(posts.createdAt, new Date(Number(to))));
+        if (authorOnly && userId) conditions.push(eq(posts.authorId, userId));
     }
 
     const postRows = await db
@@ -42,6 +41,7 @@ export const GET = async (request: NextRequest) => {
                 ? sql<boolean>`EXISTS (SELECT 1 FROM reactions WHERE reactions.post_id = ${posts.id} AND reactions.type = 'HUG' AND reactions.author_id = ${userId})`
                 : sql<boolean>`false`,
             commentCount: sql<number>`(SELECT count(*) FROM comments WHERE comments.post_id = ${posts.id} AND comments.deleted_at IS NULL)`,
+            deletedAt: posts.deletedAt,
         })
         .from(posts)
         .leftJoin(users, eq(posts.authorId, users.id))
@@ -102,5 +102,6 @@ export const POST = async (request: NextRequest) => {
         hugCount: 0,
         huggedByMe: false,
         commentCount: 0,
+        deletedAt: null,
     }, { status: 201 });
 };

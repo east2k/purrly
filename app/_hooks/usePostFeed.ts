@@ -5,12 +5,13 @@ import { POSTS_PER_PAGE } from "@/app/_constants";
 import type { ApiPost } from "@/types";
 import type { TimeRange } from "@/app/_utils/time";
 
-export type FeedFilter = "recent" | "mostHugged" | "myPosts";
+export type FeedFilter = "recent" | "mostHugged" | "myPosts" | "hidden";
 
 export const FEED_FILTER_LABELS: Record<FeedFilter, string> = {
     recent: "Recent",
     mostHugged: "Most hugged",
     myPosts: "My posts",
+    hidden: "Hidden",
 };
 
 const usePostFeed = () => {
@@ -36,9 +37,8 @@ const usePostFeed = () => {
             params.set("to", String(to));
         }
 
-        if (currentFilter === "myPosts") {
-            params.set("mine", "true");
-        }
+        if (currentFilter === "myPosts") params.set("mine", "true");
+        if (currentFilter === "hidden") params.set("hidden", "true");
 
         const res = await fetch(`/api/posts?${params}`);
         if (!res.ok) return;
@@ -103,8 +103,17 @@ const usePostFeed = () => {
         fetchPosts(false, filter, timeRange, customDate);
     };
 
+    const handleHidePost = (postId: number) => {
+        setPosts((prev) => prev.filter((p) => p.id !== postId));
+    };
+
+    const handleUnhidePost = async (postId: number) => {
+        const res = await fetch(`/api/posts/${postId}`, { method: "PATCH" });
+        if (res.ok) setPosts((prev) => prev.filter((p) => p.id !== postId));
+    };
+
     const availableFilters: FeedFilter[] = isSignedIn
-        ? ["recent", "mostHugged", "myPosts"]
+        ? ["recent", "mostHugged", "myPosts", "hidden"]
         : ["recent", "mostHugged"];
 
     return {
@@ -116,6 +125,8 @@ const usePostFeed = () => {
         customDate,
         availableFilters,
         handlePost,
+        handleHidePost,
+        handleUnhidePost,
         handleFilterChange,
         handleTimeRangeChange,
         handleDatePick,

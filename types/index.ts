@@ -24,6 +24,7 @@ export type ApiPost = {
     hugCount: number;
     huggedByMe: boolean;
     commentCount: number;
+    deletedAt: string | null;
 };
 
 export type SelfCareKey = "water" | "sleep";
