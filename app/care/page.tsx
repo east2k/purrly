@@ -1,9 +1,9 @@
 "use client";
 
 import { useUser } from "@clerk/nextjs";
-import SelfCareCard from "@/app/_components/SelfCare/SelfCareCard";
+import SelfCareCard from "./_components/SelfCareCard";
 import SignupNudge from "@/app/_components/SignupNudge";
-import useSelfCare from "@/app/_hooks/useSelfCare";
+import useSelfCare from "./_hooks/useSelfCare";
 import { SELF_CARE_CONFIG } from "@/app/_constants";
 import type { SelfCareKey } from "@/types";
 

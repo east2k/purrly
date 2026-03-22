@@ -1,7 +1,7 @@
 "use client";
 
 import { useUser } from "@clerk/nextjs";
-import WhispersTab from "@/app/_components/Whispers/WhispersTab";
+import WhispersTab from "./_components/WhispersTab";
 import SignupNudge from "@/app/_components/SignupNudge";
 
 const WhispersPage = () => {

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { ArrowLeft } from "lucide-react";
 import CountdownTimer from "./CountdownTimer";
-import ReportButton from "../ReportButton";
+import ReportButton from "@/app/_components/ReportButton";
 import type { ApiWhisper, ApiWhisperMessage } from "@/types";
 
 type WhisperThreadProps = {

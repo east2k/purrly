@@ -9,8 +9,8 @@ import usePostComments from "@/app/_hooks/usePostComments";
 import { useIdentityPreference } from "@/app/_context/IdentityPreferenceContext";
 import { REPORT_THRESHOLD } from "@/app/_constants";
 import ReactionButtons from "./ReactionButtons";
-import ReportButton from "../ReportButton";
-import SignupNudge from "../SignupNudge";
+import ReportButton from "./ReportButton";
+import SignupNudge from "./SignupNudge";
 import type { ApiPost } from "@/types";
 
 type PostCardProps = {

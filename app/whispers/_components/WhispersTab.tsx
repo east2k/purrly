@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import useWhispers from "@/app/_hooks/useWhispers";
+import useWhispers from "../_hooks/useWhispers";
 import type { ApiWhisper } from "@/types";
 import WhisperThread from "./WhisperThread";
 import MemoryCard from "./MemoryCard";

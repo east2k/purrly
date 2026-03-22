@@ -57,8 +57,14 @@ const usePostFeed = () => {
     }, [offset]);
 
     useEffect(() => {
-        setLoading(true);
-        fetchPosts(true, filter, timeRange, customDate);
+        let cancelled = false;
+        const run = async () => {
+            setLoading(true);
+            await fetchPosts(true, filter, timeRange, customDate);
+            if (cancelled) return;
+        };
+        run();
+        return () => { cancelled = true; };
     }, [filter, timeRange, customDate]);
 
     const handlePost = async (data: {
