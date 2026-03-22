@@ -35,6 +35,7 @@ const PostCard = ({ post, animationDelay = "0s", onHide, onUnhide }: PostCardPro
     const [comments, setComments] = useState<ApiComment[]>([]);
     const [commentsLoaded, setCommentsLoaded] = useState(false);
     const [commentText, setCommentText] = useState("");
+    const [submittingComment, setSubmittingComment] = useState(false);
     const [whisperPrompt, setWhisperPrompt] = useState<number | null>(null);
     const [localCommentCount, setLocalCommentCount] = useState(Number(post.commentCount));
     const { isSignedIn, user } = useUser();
@@ -61,12 +62,14 @@ const PostCard = ({ post, animationDelay = "0s", onHide, onUnhide }: PostCardPro
     };
 
     const handleComment = async () => {
-        if (!commentText.trim()) return;
+        if (!commentText.trim() || submittingComment) return;
+        setSubmittingComment(true);
         const res = await fetch(`/api/posts/${post.id}/comments`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ text: commentText.trim(), hideIdentity: false }),
         });
+        setSubmittingComment(false);
         if (!res.ok) return;
         const newComment: ApiComment = await res.json();
         setComments((prev) => [...prev, newComment]);
@@ -208,11 +211,12 @@ const PostCard = ({ post, animationDelay = "0s", onHide, onUnhide }: PostCardPro
                                 placeholder="Be kind..."
                                 value={commentText}
                                 onChange={(e) => setCommentText(e.target.value)}
-                                onKeyDown={(e) => e.key === "Enter" && handleComment()}
+                                onKeyDown={(e) => e.key === "Enter" && !submittingComment && handleComment()}
+                                disabled={submittingComment}
                             />
                             <button
                                 onClick={handleComment}
-                                disabled={!commentText.trim()}
+                                disabled={!commentText.trim() || submittingComment}
                                 className="px-4 py-2 bg-terracotta-400 text-white text-sm font-medium rounded-lg disabled:opacity-40 hover:bg-terracotta-500 transition-colors cursor-pointer font-body"
                             >
                                 Send
