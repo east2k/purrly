@@ -5,12 +5,13 @@ import { timeAgo } from "@/app/_utils/time";
 
 type WhisperRequestCardProps = {
     displayId: string | null;
+    revealId: boolean;
     createdAt: string;
     onAccept: () => void;
     onDecline: () => void;
 };
 
-const WhisperRequestCard = ({ displayId, createdAt, onAccept, onDecline }: WhisperRequestCardProps) => (
+const WhisperRequestCard = ({ displayId, revealId, createdAt, onAccept, onDecline }: WhisperRequestCardProps) => (
     <div className="bg-white rounded-2xl px-5 py-4 border border-sand-300 shadow-card">
         <div className="flex items-center gap-3 mb-3">
             <div className="w-9 h-9 rounded-full bg-sand-200 flex items-center justify-center shrink-0">
@@ -18,7 +19,7 @@ const WhisperRequestCard = ({ displayId, createdAt, onAccept, onDecline }: Whisp
             </div>
             <div>
                 <p className="text-sm font-semibold text-sand-900">
-                    Purrlynonymous-{displayId}
+                    Purrlynonymous{revealId && displayId ? `-${displayId}` : ""}
                 </p>
                 <p className="text-xs text-sand-500">wants to whisper with you</p>
             </div>

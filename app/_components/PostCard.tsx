@@ -22,6 +22,7 @@ type PostCardProps = {
 
 const PostCard = ({ post, animationDelay = "0s", onHide, onUnhide }: PostCardProps) => {
     const [whisperPrompt, setWhisperPrompt] = useState<number | null>(null);
+    const [whisperError, setWhisperError] = useState<string | null>(null);
     const [showFlaggedPost, setShowFlaggedPost] = useState(false);
     const [shownFlaggedComments, setShownFlaggedComments] = useState<Set<number>>(new Set());
     const postFlagged = Number(post.reportCount) > REPORT_THRESHOLD;
@@ -46,22 +47,24 @@ const PostCard = ({ post, animationDelay = "0s", onHide, onUnhide }: PostCardPro
         if (res.ok) onHide?.(post.id);
     };
 
-    const handleWhisperRequest = async (targetUserId: string) => {
+    const handleWhisperRequest = async (targetUserId: string, revealId: boolean) => {
         const res = await fetch("/api/whispers", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ targetUserId }),
+            body: JSON.stringify({ targetUserId, revealId }),
         });
         if (!res.ok) {
             const err = await res.json();
-            alert(err.error ?? "Something went wrong. Take a breath, we'll try again.");
+            setWhisperError(err.error ?? "Something went wrong. Take a breath, we'll try again.");
+            return;
         }
         setWhisperPrompt(null);
+        setWhisperError(null);
     };
 
     return (
         <div
-            className="bg-white rounded-2xl px-6 py-5 mb-3.5 border border-sand-300 shadow-card animate-fade-up"
+            className={["bg-white rounded-2xl px-6 py-5 mb-3.5 border border-sand-300 shadow-card animate-fade-up relative", whisperPrompt !== null ? "z-10" : ""].join(" ")}
             style={{ animationDelay }}
         >
             <div className="flex justify-between items-center mb-2">
@@ -191,21 +194,39 @@ const PostCard = ({ post, animationDelay = "0s", onHide, onUnhide }: PostCardPro
                                         </button>
                                         {whisperPrompt === c.id && (
                                             <div className="absolute right-0 top-full mt-1 bg-white border border-sand-300 rounded-xl shadow-card-lg p-3 z-10 w-52">
-                                                <p className="text-xs text-sand-600 mb-2">Send a whisper request to this person?</p>
-                                                <div className="flex gap-2">
-                                                    <button
-                                                        onClick={() => handleWhisperRequest(c.authorId)}
-                                                        className="flex-1 py-1.5 bg-terracotta-400 text-white text-xs font-medium rounded-lg hover:bg-terracotta-500 transition-colors cursor-pointer font-body"
-                                                    >
-                                                        Send
-                                                    </button>
-                                                    <button
-                                                        onClick={() => setWhisperPrompt(null)}
-                                                        className="flex-1 py-1.5 bg-sand-100 text-sand-600 text-xs font-medium rounded-lg hover:bg-sand-200 transition-colors cursor-pointer font-body"
-                                                    >
-                                                        Cancel
-                                                    </button>
-                                                </div>
+                                                <p className="text-xs font-semibold text-sand-800 mb-2.5">💬 Whisper</p>
+                                                {whisperError ? (
+                                                    <>
+                                                        <p className="text-[11px] text-sand-500 mb-2.5">{whisperError}</p>
+                                                        <button
+                                                            onClick={() => { setWhisperPrompt(null); setWhisperError(null); }}
+                                                            className="w-full py-1.5 bg-sand-100 text-sand-600 text-xs font-medium rounded-lg hover:bg-sand-200 transition-colors cursor-pointer font-body"
+                                                        >
+                                                            Got it
+                                                        </button>
+                                                    </>
+                                                ) : (
+                                                    <div className="flex flex-col gap-1.5">
+                                                        <button
+                                                            onClick={() => handleWhisperRequest(c.authorId, true)}
+                                                            className="w-full py-1.5 bg-terracotta-400 text-white text-xs font-medium rounded-lg hover:bg-terracotta-500 transition-colors cursor-pointer font-body"
+                                                        >
+                                                            Talk with ID
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleWhisperRequest(c.authorId, false)}
+                                                            className="w-full py-1.5 bg-sand-100 text-sand-700 text-xs font-medium rounded-lg hover:bg-sand-200 transition-colors cursor-pointer font-body"
+                                                        >
+                                                            Talk without revealing ID
+                                                        </button>
+                                                        <button
+                                                            onClick={() => { setWhisperPrompt(null); setWhisperError(null); }}
+                                                            className="w-full py-1.5 text-sand-400 text-xs hover:text-sand-600 transition-colors cursor-pointer font-body"
+                                                        >
+                                                            Cancel
+                                                        </button>
+                                                    </div>
+                                                )}
                                             </div>
                                         )}
                                     </div>

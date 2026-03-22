@@ -87,10 +87,12 @@ const WhispersTab = ({ currentUserId }: WhispersTabProps) => {
                                 </div>
                             ) : (
                                 active.map((w) => {
+                                    const otherIsRequester = w.requestedById !== currentUserId;
                                     const otherDisplayId =
                                         w.participantOneId === currentUserId
                                             ? w.participantTwo.displayId
                                             : w.participantOne.displayId;
+                                    const showOtherId = otherIsRequester ? w.requestedByRevealId : true;
                                     const lastMessage = w.messages[0];
                                     return (
                                         <button
@@ -100,7 +102,7 @@ const WhispersTab = ({ currentUserId }: WhispersTabProps) => {
                                         >
                                             <div className="flex justify-between items-center mb-1">
                                                 <span className="text-sm font-semibold text-sand-900">
-                                                    Purrlynonymous-{otherDisplayId}
+                                                    Purrlynonymous{showOtherId && otherDisplayId ? `-${otherDisplayId}` : ""}
                                                 </span>
                                                 {w.expiresAt && (
                                                     <CountdownTimer expiresAt={new Date(w.expiresAt).getTime()} />
@@ -133,6 +135,7 @@ const WhispersTab = ({ currentUserId }: WhispersTabProps) => {
                                         <WhisperRequestCard
                                             key={r.id}
                                             displayId={requesterDisplayId}
+                                            revealId={r.requestedByRevealId}
                                             createdAt={r.createdAt}
                                             onAccept={() => acceptRequest(r.id)}
                                             onDecline={() => declineRequest(r.id)}

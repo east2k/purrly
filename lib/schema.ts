@@ -109,6 +109,7 @@ export const whispers = pgTable("whispers", {
     expiresAt: timestamp("expires_at"),
     extended: boolean("extended").default(false).notNull(),
     requestedById: text("requested_by_id").notNull().references(() => users.id),
+    requestedByRevealId: boolean("requested_by_reveal_id").default(false).notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
 }, (table) => [

@@ -33,7 +33,7 @@ export const POST = async (request: NextRequest) => {
     }
 
     const body = await request.json();
-    const { targetUserId } = body as { targetUserId: string };
+    const { targetUserId, revealId } = body as { targetUserId: string; revealId: boolean };
 
     if (!targetUserId || targetUserId === userId) {
         return NextResponse.json({ error: "Invalid whisper target." }, { status: 400 });
@@ -60,6 +60,7 @@ export const POST = async (request: NextRequest) => {
             participantTwoId: targetUserId,
             status: "PENDING",
             requestedById: userId,
+            requestedByRevealId: revealId ?? false,
         })
         .returning();
 

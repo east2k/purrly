@@ -101,6 +101,7 @@ export type ApiWhisper = {
     expiresAt: string | null;
     extended: boolean;
     requestedById: string;
+    requestedByRevealId: boolean;
     createdAt: string;
     updatedAt: string;
     messages: { id: number; senderId: string; text: string; createdAt: string }[];
