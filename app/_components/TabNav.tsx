@@ -4,13 +4,15 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
+import { Wind, Heart, MessageCircle } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 
-type Tab = { href: string; label: string };
+type Tab = { href: string; label: string; Icon: LucideIcon };
 
 const TABS: Tab[] = [
-    { href: "/", label: "🐾 Vent" },
-    { href: "/care", label: "🧸 Self Care" },
-    { href: "/whispers", label: "💬 Whispers" },
+    { href: "/", label: "Vent", Icon: Wind },
+    { href: "/care", label: "Self Care", Icon: Heart },
+    { href: "/whispers", label: "Whispers", Icon: MessageCircle },
 ];
 
 const TabNav = () => {
@@ -43,19 +45,20 @@ const TabNav = () => {
 
     return (
         <nav className="flex gap-1 bg-sand-100 rounded-xl p-1 mb-7">
-            {TABS.map((tab) => (
+            {TABS.map(({ href, label, Icon }) => (
                 <Link
-                    key={tab.href}
-                    href={tab.href}
+                    key={href}
+                    href={href}
                     className={[
-                        "relative flex-1 py-2.5 rounded-[9px] text-sm font-medium transition-all duration-200 text-center no-underline font-body",
-                        isActive(tab.href)
+                        "relative flex-1 py-2.5 rounded-[9px] text-sm font-medium transition-all duration-200 text-center no-underline font-body flex items-center justify-center gap-1.5",
+                        isActive(href)
                             ? "bg-white text-sand-900 shadow-sm"
                             : "bg-transparent text-sand-600 hover:text-sand-900",
                     ].join(" ")}
                 >
-                    {tab.label}
-                    {tab.href === "/whispers" && hasWhisperRequests && (
+                    <Icon size={14} />
+                    {label}
+                    {href === "/whispers" && hasWhisperRequests && (
                         <span className="absolute top-1.5 right-2 w-2 h-2 bg-terracotta-400 rounded-full" />
                     )}
                 </Link>
