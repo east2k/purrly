@@ -3,6 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { comments, users, posts } from "@/lib/schema";
 import { eq, and, isNull, asc, sql } from "drizzle-orm";
+import { ensureUser } from "@/lib/ensureUser";
 
 type RouteParams = { params: Promise<{ id: string }> };
 
@@ -54,6 +55,8 @@ export const POST = async (request: NextRequest, { params }: RouteParams) => {
     if (!post.commentsEnabled) {
         return NextResponse.json({ error: "Comments are disabled on this post." }, { status: 403 });
     }
+
+    await ensureUser(userId);
 
     const [newComment] = await db
         .insert(comments)
