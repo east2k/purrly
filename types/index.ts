@@ -99,7 +99,8 @@ export type ApiWhisper = {
     participantTwo: { displayId: string | null };
     status: "PENDING" | "ACTIVE" | "EXPIRED";
     expiresAt: string | null;
-    extended: boolean;
+    extensionStatus: "PENDING" | "ACCEPTED" | "DECLINED" | null;
+    extensionRequestedById: string | null;
     requestedById: string;
     requestedByRevealId: boolean;
     createdAt: string;

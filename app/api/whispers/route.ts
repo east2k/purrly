@@ -3,6 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { whispers } from "@/lib/schema";
 import { eq, or, and, desc } from "drizzle-orm";
+import { ensureUser } from "@/lib/ensureUser";
 
 export const GET = async () => {
     const { userId } = await auth();
@@ -38,6 +39,8 @@ export const POST = async (request: NextRequest) => {
     if (!targetUserId || targetUserId === userId) {
         return NextResponse.json({ error: "Invalid whisper target." }, { status: 400 });
     }
+
+    await ensureUser(userId);
 
     const existingWhisper = await db.query.whispers.findFirst({
         where: and(

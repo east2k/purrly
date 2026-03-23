@@ -23,7 +23,7 @@ const SUB_TAB_LABELS: Record<SubTab, string> = {
 const WhispersTab = ({ currentUserId }: WhispersTabProps) => {
     const [subTab, setSubTab] = useState<SubTab>("active");
     const [openThread, setOpenThread] = useState<ApiWhisper | null>(null);
-    const { whispers, memories, loading, acceptRequest, declineRequest, extendWhisper, reconnect } = useWhispers();
+    const { whispers, memories, loading, acceptRequest, declineRequest, reconnect } = useWhispers();
 
     const active = whispers.filter((w) => w.status === "ACTIVE");
     const incoming = whispers.filter((w) => w.status === "PENDING" && w.requestedById !== currentUserId);
@@ -34,7 +34,6 @@ const WhispersTab = ({ currentUserId }: WhispersTabProps) => {
                 whisper={openThread}
                 currentUserId={currentUserId}
                 onBack={() => setOpenThread(null)}
-                onExtend={() => extendWhisper(openThread.id)}
             />
         );
     }

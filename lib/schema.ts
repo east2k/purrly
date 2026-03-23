@@ -15,6 +15,7 @@ import { relations } from "drizzle-orm";
 
 export const reactionTypeEnum = pgEnum("reaction_type", ["HUG", "ME_TOO"]);
 export const whisperStatusEnum = pgEnum("whisper_status", ["PENDING", "ACTIVE", "EXPIRED"]);
+export const extensionStatusEnum = pgEnum("extension_status", ["PENDING", "ACCEPTED", "DECLINED"]);
 export const reportContentTypeEnum = pgEnum("report_content_type", ["POST", "COMMENT", "WHISPER_MESSAGE"]);
 export const reportStatusEnum = pgEnum("report_status", ["PENDING", "REVIEWED", "ACTIONED"]);
 export const reconnectStatusEnum = pgEnum("reconnect_status", ["PENDING", "ACCEPTED", "DECLINED", "EXPIRED"]);
@@ -107,7 +108,8 @@ export const whispers = pgTable("whispers", {
     participantTwoId: text("participant_two_id").notNull().references(() => users.id),
     status: whisperStatusEnum("status").default("PENDING").notNull(),
     expiresAt: timestamp("expires_at"),
-    extended: boolean("extended").default(false).notNull(),
+    extensionStatus: extensionStatusEnum("extension_status"),
+    extensionRequestedById: text("extension_requested_by_id").references(() => users.id),
     requestedById: text("requested_by_id").notNull().references(() => users.id),
     requestedByRevealId: boolean("requested_by_reveal_id").default(false).notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),

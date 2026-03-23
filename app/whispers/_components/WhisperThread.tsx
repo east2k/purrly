@@ -13,17 +13,18 @@ type WhisperThreadProps = {
     whisper: ApiWhisper;
     currentUserId: string;
     onBack: () => void;
-    onExtend: () => Promise<boolean>;
 };
 
-const WhisperThread = ({ whisper, currentUserId, onBack, onExtend }: WhisperThreadProps) => {
+const WhisperThread = ({ whisper, currentUserId, onBack }: WhisperThreadProps) => {
     const [messages, setMessages] = useState<ApiWhisperMessage[]>([]);
     const [loadingMessages, setLoadingMessages] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
     const [hasMore, setHasMore] = useState(false);
     const [messageText, setMessageText] = useState("");
-    const [extending, setExtending] = useState(false);
-    const [extended, setExtended] = useState(whisper.extended);
+    const [extensionStatus, setExtensionStatus] = useState(whisper.extensionStatus);
+    const [extensionRequestedById, setExtensionRequestedById] = useState(whisper.extensionRequestedById);
+    const [expiresAt, setExpiresAt] = useState(whisper.expiresAt);
+    const [actioning, setActioning] = useState(false);
     const scrollRef = useRef<HTMLDivElement>(null);
     const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -31,6 +32,8 @@ const WhisperThread = ({ whisper, currentUserId, onBack, onExtend }: WhisperThre
         whisper.participantOneId === currentUserId
             ? whisper.participantTwo.displayId
             : whisper.participantOne.displayId;
+
+    const iRequested = extensionRequestedById === currentUserId;
 
     useEffect(() => {
         const load = async () => {
@@ -67,6 +70,15 @@ const WhisperThread = ({ whisper, currentUserId, onBack, onExtend }: WhisperThre
                 if (prev.some((m) => m.id === msg.id)) return prev;
                 return [...prev, msg];
             });
+        });
+        channel.bind("extension-update", (data: {
+            extensionStatus: "PENDING" | "ACCEPTED" | "DECLINED";
+            extensionRequestedById: string;
+            expiresAt?: string;
+        }) => {
+            setExtensionStatus(data.extensionStatus);
+            setExtensionRequestedById(data.extensionRequestedById);
+            if (data.expiresAt) setExpiresAt(data.expiresAt);
         });
         return () => {
             channel.unbind_all();
@@ -117,11 +129,66 @@ const WhisperThread = ({ whisper, currentUserId, onBack, onExtend }: WhisperThre
         }
     };
 
-    const handleExtend = async () => {
-        setExtending(true);
-        const ok = await onExtend();
-        if (ok) setExtended(true);
-        setExtending(false);
+    const callAction = async (action: string) => {
+        setActioning(true);
+        await fetch(`/api/whispers/${whisper.id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action }),
+        });
+        setActioning(false);
+    };
+
+    const renderExtensionArea = () => {
+        if (!extensionStatus) {
+            return (
+                <button
+                    onClick={() => callAction("extend")}
+                    disabled={actioning}
+                    className="text-xs text-terracotta-400 hover:text-terracotta-500 transition-colors cursor-pointer font-body disabled:opacity-50"
+                >
+                    {actioning ? "Sending..." : "Request more time"}
+                </button>
+            );
+        }
+        if (extensionStatus === "PENDING" && iRequested) {
+            return <p className="text-xs text-sand-400 italic">Extension requested, waiting for a response</p>;
+        }
+        if (extensionStatus === "PENDING" && !iRequested) {
+            return (
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => callAction("accept-extension")}
+                        disabled={actioning}
+                        className="text-xs text-terracotta-400 hover:text-terracotta-500 transition-colors cursor-pointer font-body disabled:opacity-50"
+                    >
+                        Accept
+                    </button>
+                    <button
+                        onClick={() => callAction("decline-extension")}
+                        disabled={actioning}
+                        className="text-xs text-sand-400 hover:text-sand-600 transition-colors cursor-pointer font-body disabled:opacity-50"
+                    >
+                        Decline
+                    </button>
+                </div>
+            );
+        }
+        if (extensionStatus === "ACCEPTED") {
+            return (
+                <p className="text-xs text-sand-400 italic">
+                    {iRequested ? "The other person has responded to your request" : "You accepted this extension request"}
+                </p>
+            );
+        }
+        if (extensionStatus === "DECLINED") {
+            return (
+                <p className="text-xs text-sand-400 italic">
+                    {iRequested ? "The other person has responded to your request" : "You declined this extension request"}
+                </p>
+            );
+        }
+        return null;
     };
 
     return (
@@ -137,23 +204,11 @@ const WhisperThread = ({ whisper, currentUserId, onBack, onExtend }: WhisperThre
                     <p className="text-sm font-semibold text-sand-900">
                         Purrlynonymous-{otherDisplayId}
                     </p>
-                    {whisper.expiresAt && (
-                        <CountdownTimer expiresAt={new Date(whisper.expiresAt).getTime()} />
+                    {expiresAt && (
+                        <CountdownTimer expiresAt={new Date(expiresAt).getTime()} />
                     )}
                 </div>
-                {extended ? (
-                    <p className="text-xs text-sand-400 italic">
-                        Extension requested, waiting for a response
-                    </p>
-                ) : (
-                    <button
-                        onClick={handleExtend}
-                        disabled={extending}
-                        className="text-xs text-terracotta-400 hover:text-terracotta-500 transition-colors cursor-pointer font-body disabled:opacity-50"
-                    >
-                        {extending ? "Sending..." : "Request more time"}
-                    </button>
-                )}
+                {renderExtensionArea()}
             </div>
 
             <div
@@ -202,7 +257,7 @@ const WhisperThread = ({ whisper, currentUserId, onBack, onExtend }: WhisperThre
                 })}
 
                 {!loadingMessages && messages.length === 0 && (
-                    <p className="text-center text-sm text-sand-400 py-8">No messages yet. Say something gentle 🌸</p>
+                    <p className="text-center text-sm text-sand-400 py-8">No messages yet. Say something gentle.</p>
                 )}
                 <div ref={bottomRef} />
             </div>
