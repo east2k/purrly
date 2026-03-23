@@ -8,7 +8,7 @@ import MemoryCard from "./MemoryCard";
 import WhisperRequestCard from "./WhisperRequestCard";
 import CountdownTimer from "./CountdownTimer";
 
-type SubTab = "active" | "requests" | "memories";
+type SubTab = "active" | "requests" | "memories" | "reported";
 
 type WhispersTabProps = {
     currentUserId: string;
@@ -18,6 +18,7 @@ const SUB_TAB_LABELS: Record<SubTab, string> = {
     active: "Active",
     requests: "Requests",
     memories: "Memories",
+    reported: "Reported",
 };
 
 const WhispersTab = ({ currentUserId }: WhispersTabProps) => {
@@ -27,6 +28,7 @@ const WhispersTab = ({ currentUserId }: WhispersTabProps) => {
 
     const active = whispers.filter((w) => w.status === "ACTIVE");
     const incoming = whispers.filter((w) => w.status === "PENDING" && w.requestedById !== currentUserId);
+    const reported = whispers.filter((w) => w.reportedById === currentUserId);
 
     if (openThread) {
         return (
@@ -41,7 +43,7 @@ const WhispersTab = ({ currentUserId }: WhispersTabProps) => {
     return (
         <div>
             <div className="flex gap-1 bg-sand-100 rounded-lg p-1 mb-5">
-                {(["active", "requests", "memories"] as const).map((t) => (
+                {(["active", "requests", "memories", "reported"] as const).map((t) => (
                     <button
                         key={t}
                         onClick={() => setSubTab(t)}
@@ -160,6 +162,40 @@ const WhispersTab = ({ currentUserId }: WhispersTabProps) => {
                                         onReconnect={(memoryId) => reconnect(memoryId)}
                                     />
                                 ))
+                            )}
+                        </div>
+                    )}
+
+                    {subTab === "reported" && (
+                        <div className="space-y-3">
+                            {reported.length === 0 ? (
+                                <div className="text-center py-12">
+                                    <p className="text-sm text-sand-500">No reported whispers.</p>
+                                </div>
+                            ) : (
+                                reported.map((w) => {
+                                    const otherDisplayId =
+                                        w.participantOneId === currentUserId
+                                            ? w.participantTwo.displayId
+                                            : w.participantOne.displayId;
+                                    return (
+                                        <button
+                                            key={w.id}
+                                            onClick={() => setOpenThread(w)}
+                                            className="w-full text-left bg-white rounded-2xl px-5 py-4 border border-sand-300 shadow-card hover:border-terracotta-300 transition-colors cursor-pointer"
+                                        >
+                                            <div className="flex justify-between items-center mb-1">
+                                                <span className="text-sm font-semibold text-sand-900">
+                                                    Purrlynonymous-{otherDisplayId}
+                                                </span>
+                                                <span className="text-[11px] text-sand-400">
+                                                    {w.messagingAllowed ? "Messaging on" : "Messaging off"}
+                                                </span>
+                                            </div>
+                                            <p className="text-xs text-sand-400">Reported</p>
+                                        </button>
+                                    );
+                                })
                             )}
                         </div>
                     )}

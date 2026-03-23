@@ -111,6 +111,8 @@ export const whispers = pgTable("whispers", {
     extensionStatus: extensionStatusEnum("extension_status"),
     extensionRequestedById: text("extension_requested_by_id").references(() => users.id),
     requestedById: text("requested_by_id").notNull().references(() => users.id),
+    reportedById: text("reported_by_id").references(() => users.id),
+    messagingAllowed: boolean("messaging_allowed").default(true).notNull(),
     requestedByRevealId: boolean("requested_by_reveal_id").default(false).notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),

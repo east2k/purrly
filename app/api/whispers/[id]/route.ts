@@ -17,7 +17,10 @@ export const PUT = async (request: NextRequest, { params }: RouteParams) => {
     const { id } = await params;
     const whisperId = Number(id);
     const body = await request.json();
-    const { action } = body as { action: "accept" | "decline" | "extend" | "accept-extension" | "decline-extension" };
+    const { action, messagingAllowed: bodyMessagingAllowed } = body as {
+        action: "accept" | "decline" | "extend" | "accept-extension" | "decline-extension" | "report" | "toggle-messaging";
+        messagingAllowed?: boolean;
+    };
 
     const whisper = await db.query.whispers.findFirst({
         where: and(
@@ -114,6 +117,39 @@ export const PUT = async (request: NextRequest, { params }: RouteParams) => {
                 extensionRequestedById: whisper.extensionRequestedById,
             });
             return NextResponse.json(declined);
+        }
+        case "report": {
+            if (whisper.reportedById) {
+                return NextResponse.json({ error: "This whisper has already been reported." }, { status: 400 });
+            }
+            if (whisper.participantOneId !== userId && whisper.participantTwoId !== userId) {
+                return NextResponse.json({ error: "Not a participant." }, { status: 403 });
+            }
+            const [reported] = await db
+                .update(whispers)
+                .set({ reportedById: userId, messagingAllowed: bodyMessagingAllowed ?? true, updatedAt: new Date() })
+                .where(eq(whispers.id, whisperId))
+                .returning();
+            await pusherServer.trigger(`whisper-${whisperId}`, "report-update", {
+                reportedById: userId,
+                messagingAllowed: reported.messagingAllowed,
+            });
+            return NextResponse.json(reported);
+        }
+        case "toggle-messaging": {
+            if (whisper.reportedById !== userId) {
+                return NextResponse.json({ error: "Only the reporter can toggle messaging." }, { status: 403 });
+            }
+            const [toggled] = await db
+                .update(whispers)
+                .set({ messagingAllowed: !whisper.messagingAllowed, updatedAt: new Date() })
+                .where(eq(whispers.id, whisperId))
+                .returning();
+            await pusherServer.trigger(`whisper-${whisperId}`, "report-update", {
+                reportedById: userId,
+                messagingAllowed: toggled.messagingAllowed,
+            });
+            return NextResponse.json(toggled);
         }
         default:
             return NextResponse.json({ error: "Invalid action." }, { status: 400 });

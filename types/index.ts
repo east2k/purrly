@@ -103,6 +103,8 @@ export type ApiWhisper = {
     extensionRequestedById: string | null;
     requestedById: string;
     requestedByRevealId: boolean;
+    reportedById: string | null;
+    messagingAllowed: boolean;
     createdAt: string;
     updatedAt: string;
     messages: { id: number; senderId: string; text: string; createdAt: string }[];
