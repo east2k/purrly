@@ -51,7 +51,10 @@ const usePostFeed = () => {
             setPosts(data);
             setOffset(data.length);
         } else {
-            setPosts((prev) => [...prev, ...data]);
+            setPosts((prev) => {
+                const existingIds = new Set(prev.map((p) => p.id));
+                return [...prev, ...data.filter((p) => !existingIds.has(p.id))];
+            });
             setOffset((prev) => prev + data.length);
         }
         setHasMore(data.length >= POSTS_PER_PAGE);
@@ -88,7 +91,7 @@ const usePostFeed = () => {
         }
 
         const newPost: ApiPost = await res.json();
-        setPosts((prev) => [newPost, ...prev]);
+        setPosts((prev) => prev.some((p) => p.id === newPost.id) ? prev : [newPost, ...prev]);
         setFilter("recent");
         setTimeRange("all");
         setCustomDate(null);

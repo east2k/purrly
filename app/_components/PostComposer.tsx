@@ -122,7 +122,7 @@ const PostComposer = ({ onPost }: PostComposerProps) => {
                     className={[
                         "flex-1 px-3 py-2 border rounded-lg text-sm outline-none transition-colors cursor-pointer font-body bg-sand-50",
                         !language
-                            ? "border-terracotta-300 text-sand-400 focus:border-terracotta-400"
+                            ? "border-terracotta-300 text-sand-600 focus:border-terracotta-400"
                             : "border-sand-300 text-sand-800 focus:border-terracotta-400",
                     ].join(" ")}
                 >
