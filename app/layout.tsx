@@ -3,6 +3,7 @@ import { Fraunces, DM_Sans } from "next/font/google";
 import { ClerkProvider, Show, SignInButton } from "@clerk/nextjs";
 import Image from "next/image";
 import TabNav from "@/app/_components/TabNav";
+import Footer from "@/app/_components/Footer";
 import IdentityToggle from "@/app/_components/IdentityToggle";
 import UserMenu from "@/app/_components/UserMenu";
 import { IdentityPreferenceProvider } from "@/app/_context/IdentityPreferenceContext";
@@ -57,6 +58,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => (
                     <TabNav />
                     <IdentityToggle />
                     {children}
+                    <Footer />
                 </div>
                 </IdentityPreferenceProvider>
             </body>
