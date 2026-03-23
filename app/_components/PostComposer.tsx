@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
 import { MOOD_OPTIONS, MAX_UNSIGNED_POSTS_PER_DAY, LANGUAGE_OPTIONS } from "@/app/_constants";
 import { useIdentityPreference } from "@/app/_context/IdentityPreferenceContext";
@@ -14,7 +14,7 @@ type PostData = {
 };
 
 type PostComposerProps = {
-    onPost: (post: PostData) => void;
+    onPost: (post: PostData) => Promise<string | null>;
 };
 
 const PostComposer = ({ onPost }: PostComposerProps) => {
@@ -24,24 +24,39 @@ const PostComposer = ({ onPost }: PostComposerProps) => {
     const [commentsEnabled, setCommentsEnabled] = useState(true);
     const [showAllMoods, setShowAllMoods] = useState(false);
     const [postsToday, setPostsToday] = useState(0);
+    const [postError, setPostError] = useState<string | null>(null);
     const textRef = useRef<HTMLTextAreaElement>(null);
     const { isSignedIn } = useUser();
     const { hideIdentity } = useIdentityPreference();
+
+    useEffect(() => {
+        if (isSignedIn) return;
+        fetch("/api/posts/rate-limit")
+            .then((r) => r.json())
+            .then((data) => setPostsToday(data.count ?? 0))
+            .catch(() => {});
+    }, [isSignedIn]);
 
     const isRateLimited = !isSignedIn && postsToday >= MAX_UNSIGNED_POSTS_PER_DAY;
     const remainingPosts = MAX_UNSIGNED_POSTS_PER_DAY - postsToday;
 
     const visibleMoods = showAllMoods ? MOOD_OPTIONS : MOOD_OPTIONS.slice(0, 6);
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         if (!text.trim() || !language || isRateLimited) return;
-        onPost({
+        setPostError(null);
+        const error = await onPost({
             text: text.trim(),
             mood,
             language,
             commentsEnabled,
             hideIdentity: isSignedIn ? hideIdentity : true,
         });
+        if (error) {
+            setPostError(error);
+            if (!isSignedIn) setPostsToday(MAX_UNSIGNED_POSTS_PER_DAY);
+            return;
+        }
         setText("");
         setMood(null);
         setLanguage("");
@@ -134,7 +149,10 @@ const PostComposer = ({ onPost }: PostComposerProps) => {
                 </button>
             </div>
 
-            {!isSignedIn && postsToday > 0 && (
+            {postError && (
+                <p className="text-xs text-red-400 mt-3 text-center">{postError}</p>
+            )}
+            {!isSignedIn && !postError && postsToday > 0 && (
                 <p className="text-xs text-sand-500 mt-3 text-center">
                     {isRateLimited
                         ? "You've reached today's limit. Sign in to post more."

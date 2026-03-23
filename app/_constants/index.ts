@@ -4,6 +4,7 @@ export const MAX_UNSIGNED_POSTS_PER_DAY = 3;
 
 export const LANGUAGE_OPTIONS: { code: string; label: string }[] = [
     { code: "en", label: "English" },
+    { code: "tl", label: "Filipino" },
     { code: "es", label: "Español" },
     { code: "fr", label: "Français" },
     { code: "pt", label: "Português" },
@@ -14,7 +15,6 @@ export const LANGUAGE_OPTIONS: { code: string; label: string }[] = [
     { code: "zh", label: "中文" },
     { code: "ar", label: "العربية" },
     { code: "hi", label: "हिन्दी" },
-    { code: "tl", label: "Filipino" },
     { code: "id", label: "Bahasa Indonesia" },
     { code: "th", label: "ภาษาไทย" },
     { code: "vi", label: "Tiếng Việt" },

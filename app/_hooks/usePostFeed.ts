@@ -75,20 +75,24 @@ const usePostFeed = () => {
         language: string;
         commentsEnabled: boolean;
         hideIdentity: boolean;
-    }) => {
+    }): Promise<string | null> => {
         const res = await fetch("/api/posts", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(data),
         });
 
-        if (!res.ok) return;
+        if (!res.ok) {
+            const body = await res.json().catch(() => ({}));
+            return (body.error as string) ?? "Something went wrong. Take a breath, we'll try again.";
+        }
 
         const newPost: ApiPost = await res.json();
         setPosts((prev) => [newPost, ...prev]);
         setFilter("recent");
         setTimeRange("all");
         setCustomDate(null);
+        return null;
     };
 
     const handleFilterChange = (f: FeedFilter) => {

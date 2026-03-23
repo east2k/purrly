@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
-import { posts, users } from "@/lib/schema";
+import { posts, users, anonRateLimits } from "@/lib/schema";
 import { desc, eq, isNull, isNotNull, sql, and, gte, lte } from "drizzle-orm";
+import { MAX_UNSIGNED_POSTS_PER_DAY } from "@/app/_constants";
 
 export const GET = async (request: NextRequest) => {
     const { searchParams } = request.nextUrl;
@@ -83,6 +84,33 @@ export const POST = async (request: NextRequest) => {
 
     if (postText.trim().length > 2000) {
         return NextResponse.json({ error: "Post is too long." }, { status: 400 });
+    }
+
+    if (!userId) {
+        const ip =
+            request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+            request.headers.get("x-real-ip") ??
+            "unknown";
+        const today = new Date().toISOString().slice(0, 10);
+
+        const [rateLimit] = await db
+            .insert(anonRateLimits)
+            .values({ ip, date: today, count: 1 })
+            .onConflictDoUpdate({
+                target: [anonRateLimits.ip, anonRateLimits.date],
+                set: {
+                    count: sql`${anonRateLimits.count} + 1`,
+                    updatedAt: sql`now()`,
+                },
+            })
+            .returning();
+
+        if (rateLimit.count > MAX_UNSIGNED_POSTS_PER_DAY) {
+            return NextResponse.json(
+                { error: "Daily post limit reached. Sign up to keep posting." },
+                { status: 429 }
+            );
+        }
     }
 
     const [newPost] = await db

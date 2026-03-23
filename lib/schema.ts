@@ -194,6 +194,18 @@ export const dailyCheckInsRelations = relations(dailyCheckIns, ({ one }) => ({
     user: one(users, { fields: [dailyCheckIns.userId], references: [users.id] }),
 }));
 
+// ── Anon Rate Limits ──
+
+export const anonRateLimits = pgTable("anon_rate_limits", {
+    id: serial("id").primaryKey(),
+    ip: text("ip").notNull(),
+    date: text("date").notNull(), // YYYY-MM-DD UTC
+    count: integer("count").default(1).notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+}, (table) => [
+    uniqueIndex("anon_rate_limits_ip_date_idx").on(table.ip, table.date),
+]);
+
 // ── Reports ──
 
 export const reports = pgTable("reports", {
