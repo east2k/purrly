@@ -18,6 +18,9 @@ type WhisperThreadProps = {
 const WhisperThread = ({ whisper, currentUserId, onBack }: WhisperThreadProps) => {
     const [messages, setMessages] = useState<ApiWhisperMessage[]>([]);
     const [loadingMessages, setLoadingMessages] = useState(true);
+    const [threadExpired, setThreadExpired] = useState(() =>
+        !!whisper.expiresAt && new Date(whisper.expiresAt).getTime() <= Date.now()
+    );
     const [loadingMore, setLoadingMore] = useState(false);
     const [hasMore, setHasMore] = useState(false);
     const [messageText, setMessageText] = useState("");
@@ -43,6 +46,11 @@ const WhisperThread = ({ whisper, currentUserId, onBack }: WhisperThreadProps) =
     useEffect(() => {
         const load = async () => {
             const res = await fetch(`/api/whispers/${whisper.id}/messages?limit=${MESSAGE_LIMIT}`);
+            if (res.status === 404) {
+                setThreadExpired(true);
+                setLoadingMessages(false);
+                return;
+            }
             if (res.ok) {
                 const data: ApiWhisperMessage[] = await res.json();
                 setMessages(data);
@@ -241,14 +249,14 @@ const WhisperThread = ({ whisper, currentUserId, onBack }: WhisperThreadProps) =
                             disabled={actioning}
                             className="w-full py-2 text-xs font-medium text-sand-700 bg-white border border-sand-200 rounded-lg hover:border-sand-300 transition-colors cursor-pointer disabled:opacity-50"
                         >
-                            Report — Allow messaging
+                            {actioning ? "Reporting..." : "Report — Allow messaging"}
                         </button>
                         <button
                             onClick={() => handleReport(false)}
                             disabled={actioning}
                             className="w-full py-2 text-xs font-medium text-white bg-terracotta-400 rounded-lg hover:bg-terracotta-500 transition-colors cursor-pointer disabled:opacity-50"
                         >
-                            Report — Disable messaging
+                            {actioning ? "Reporting..." : "Report — Disable messaging"}
                         </button>
                         <button
                             onClick={() => setReportPrompt(false)}
@@ -292,7 +300,7 @@ const WhisperThread = ({ whisper, currentUserId, onBack }: WhisperThreadProps) =
                                         {new Date(m.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                                     </span>
                                     {!isMine && !reportedById && (
-                                        <ReportButton contentType="WHISPER_MESSAGE" contentId={m.id} />
+                                        <ReportButton contentType="WHISPER_MESSAGE" contentId={m.id} dropUp />
                                     )}
                                 </div>
                             </div>
@@ -310,15 +318,15 @@ const WhisperThread = ({ whisper, currentUserId, onBack }: WhisperThreadProps) =
             <div className="flex gap-2">
                 <input
                     className="flex-1 px-4 py-2.5 border border-sand-300 rounded-[10px] text-sm bg-sand-50 text-sand-900 outline-none focus:border-terracotta-400 font-body placeholder:text-sand-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                    placeholder={messagingBlocked ? "Messaging is disabled" : "Say something gentle..."}
+                    placeholder={threadExpired ? "This chat has expired" : messagingBlocked ? "Messaging is disabled" : "Say something gentle..."}
                     value={messageText}
                     onChange={(e) => setMessageText(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                    disabled={messagingBlocked}
+                    disabled={messagingBlocked || threadExpired}
                 />
                 <button
                     onClick={handleSend}
-                    disabled={!messageText.trim() || messagingBlocked}
+                    disabled={!messageText.trim() || messagingBlocked || threadExpired}
                     className="px-5 py-2.5 bg-terracotta-400 text-white text-sm font-medium rounded-[10px] disabled:opacity-40 hover:bg-terracotta-500 transition-colors cursor-pointer font-body"
                 >
                     Send

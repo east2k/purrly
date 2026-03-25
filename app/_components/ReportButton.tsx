@@ -1,23 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { createPortal } from "react-dom";
 import { Flag } from "lucide-react";
 import type { ReportContentType } from "@/types";
 
 type ReportButtonProps = {
     contentType: ReportContentType;
     contentId: number;
+    dropUp?: boolean;
 };
 
 const reportKey = (contentType: ReportContentType, contentId: number) =>
     `purrly_reported_${contentType}_${contentId}`;
 
-const ReportButton = ({ contentType, contentId }: ReportButtonProps) => {
+const ReportButton = ({ contentType, contentId, dropUp = false }: ReportButtonProps) => {
     const [showForm, setShowForm] = useState(false);
     const [reason, setReason] = useState("");
     const [submitted, setSubmitted] = useState(
         () => typeof window !== "undefined" && !!localStorage.getItem(reportKey(contentType, contentId)),
     );
+    const [popupStyle, setPopupStyle] = useState<React.CSSProperties>({});
+    const buttonRef = useRef<HTMLButtonElement>(null);
 
     const handleSubmit = async () => {
         if (!reason.trim()) return;
@@ -39,14 +43,25 @@ const ReportButton = ({ contentType, contentId }: ReportButtonProps) => {
     return (
         <div className="relative">
             <button
-                onClick={() => setShowForm(!showForm)}
+                ref={buttonRef}
+                onClick={() => {
+                    if (!showForm && buttonRef.current) {
+                        const rect = buttonRef.current.getBoundingClientRect();
+                        setPopupStyle(
+                            dropUp
+                                ? { position: "fixed", bottom: window.innerHeight - rect.top + 4, right: window.innerWidth - rect.right }
+                                : { position: "fixed", top: rect.bottom + 4, right: window.innerWidth - rect.right }
+                        );
+                    }
+                    setShowForm(!showForm);
+                }}
                 className="text-sand-400 hover:text-sand-600 transition-colors cursor-pointer p-1"
                 title="Report"
             >
                 <Flag size={14} />
             </button>
-            {showForm && (
-                <div className="absolute right-0 top-full mt-1 bg-white border border-sand-300 rounded-xl shadow-card-lg p-3 z-10 w-56">
+            {showForm && createPortal(
+                <div style={popupStyle} className="bg-white border border-sand-300 rounded-xl shadow-card-lg p-3 z-9999 w-56">
                     <p className="text-xs text-sand-600 mb-2">Why are you reporting this?</p>
                     <textarea
                         className="w-full px-3 py-2 border border-sand-300 rounded-lg text-xs bg-sand-50 text-sand-900 outline-none focus:border-terracotta-400 font-body placeholder:text-sand-500 resize-none"
@@ -57,10 +72,7 @@ const ReportButton = ({ contentType, contentId }: ReportButtonProps) => {
                     />
                     <div className="flex justify-end gap-2 mt-2">
                         <button
-                            onClick={() => {
-                                setShowForm(false);
-                                setReason("");
-                            }}
+                            onClick={() => { setShowForm(false); setReason(""); }}
                             className="text-xs text-sand-500 hover:text-sand-700 cursor-pointer"
                         >
                             Cancel
@@ -73,7 +85,8 @@ const ReportButton = ({ contentType, contentId }: ReportButtonProps) => {
                             Report
                         </button>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
         </div>
     );

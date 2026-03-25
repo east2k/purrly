@@ -26,6 +26,7 @@ const WhispersTab = ({ currentUserId }: WhispersTabProps) => {
     const [openThread, setOpenThread] = useState<ApiWhisper | null>(null);
     const { whispers, memories, loading, acceptRequest, declineRequest, reconnect } = useWhispers();
 
+    const [now] = useState(() => Date.now());
     const active = whispers.filter((w) => w.status === "ACTIVE");
     const incoming = whispers.filter((w) => w.status === "PENDING" && w.requestedById !== currentUserId);
     const reported = whispers.filter((w) => w.reportedById === currentUserId);
@@ -95,22 +96,30 @@ const WhispersTab = ({ currentUserId }: WhispersTabProps) => {
                                             : w.participantOne.displayId;
                                     const showOtherId = otherIsRequester ? w.requestedByRevealId : true;
                                     const lastMessage = w.messages[0];
+                                    const isExpired = w.expiresAt && new Date(w.expiresAt).getTime() <= now;
                                     return (
                                         <button
                                             key={w.id}
                                             onClick={() => setOpenThread(w)}
-                                            className="w-full text-left bg-white rounded-2xl px-5 py-4 border border-sand-300 shadow-card hover:border-terracotta-300 transition-colors cursor-pointer"
+                                            className={[
+                                                "w-full text-left rounded-2xl px-5 py-4 border shadow-card transition-colors cursor-pointer",
+                                                isExpired
+                                                    ? "bg-sand-50 border-sand-200 hover:border-sand-300"
+                                                    : "bg-white border-sand-300 hover:border-terracotta-300",
+                                            ].join(" ")}
                                         >
                                             <div className="flex justify-between items-center mb-1">
-                                                <span className="text-sm font-semibold text-sand-900">
+                                                <span className={`text-sm font-semibold ${isExpired ? "text-sand-400" : "text-sand-900"}`}>
                                                     Purrlynonymous{showOtherId && otherDisplayId ? `-${otherDisplayId}` : ""}
                                                 </span>
-                                                {w.expiresAt && (
+                                                {isExpired ? (
+                                                    <span className="text-[11px] text-sand-400 font-medium">Expired</span>
+                                                ) : w.expiresAt ? (
                                                     <CountdownTimer expiresAt={new Date(w.expiresAt).getTime()} />
-                                                )}
+                                                ) : null}
                                             </div>
                                             {lastMessage && (
-                                                <p className="text-sm text-sand-600 truncate">
+                                                <p className={`text-sm truncate ${isExpired ? "text-sand-400" : "text-sand-600"}`}>
                                                     {lastMessage.text}
                                                 </p>
                                             )}
