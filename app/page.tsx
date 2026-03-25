@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { CalendarDays } from "lucide-react";
 import PostComposer from "@/app/_components/PostComposer";
+import IdentityToggle from "@/app/_components/IdentityToggle";
 import PostCard from "@/app/_components/PostCard";
 import usePostFeed, { FEED_FILTER_LABELS } from "@/app/_hooks/usePostFeed";
 import { TIME_RANGE_OPTIONS, formatCustomDate } from "@/app/_utils/time";
@@ -31,6 +32,7 @@ const VentPage = () => {
 
     return (
         <div>
+            <IdentityToggle />
             <PostComposer onPost={handlePost} />
 
             <div className="flex items-center justify-between mb-3">

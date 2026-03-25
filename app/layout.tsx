@@ -4,7 +4,6 @@ import { ClerkProvider, Show, SignInButton } from "@clerk/nextjs";
 import Image from "next/image";
 import TabNav from "@/app/_components/TabNav";
 import Footer from "@/app/_components/Footer";
-import IdentityToggle from "@/app/_components/IdentityToggle";
 import UserMenu from "@/app/_components/UserMenu";
 import { IdentityPreferenceProvider } from "@/app/_context/IdentityPreferenceContext";
 import "./globals.css";
@@ -56,7 +55,6 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => (
                         </div>
                     </header>
                     <TabNav />
-                    <IdentityToggle />
                     {children}
                     <Footer />
                 </div>
