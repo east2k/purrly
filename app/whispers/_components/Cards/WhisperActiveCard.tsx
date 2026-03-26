@@ -30,10 +30,15 @@ const WhisperActiveCard = ({ whisper, currentUserId, now, onClick }: WhisperActi
                     : "bg-white border-sand-300 hover:border-terracotta-300",
             ].join(" ")}
         >
-            <div className="flex justify-between items-center mb-1">
-                <span className={`text-sm font-semibold ${isExpired ? "text-sand-400" : "text-sand-900"}`}>
-                    Purrlynonymous{showOtherId && otherDisplayId ? `-${otherDisplayId}` : ""}
-                </span>
+            <div className="flex justify-between items-start mb-1">
+                <div>
+                    <span className={`text-sm font-semibold ${isExpired ? "text-sand-400" : "text-sand-900"}`}>
+                        Purrlynonymous{showOtherId && otherDisplayId ? `-${otherDisplayId}` : ""}
+                    </span>
+                    <p className={`text-[10px] mt-0.5 ${isExpired ? "text-sand-300" : "text-sand-400"}`}>
+                        Started {new Date(whisper.createdAt).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })}
+                    </p>
+                </div>
                 {isExpired ? (
                     <span className="text-[11px] text-sand-400 font-medium">Expired</span>
                 ) : whisper.expiresAt ? (

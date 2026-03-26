@@ -75,9 +75,9 @@ const WhisperThread = ({ whisper, currentUserId, onBack }: WhisperThreadProps) =
                     <p className="text-sm font-semibold text-sand-900">
                         Purrlynonymous{showOtherId && otherDisplayId ? `-${otherDisplayId}` : ""}
                     </p>
-                    <span className="text-[10px] text-sand-400">
+                    <p className="text-[10px] text-sand-400 mt-0.5">
                         Started {new Date(whisper.createdAt).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })}
-                    </span>
+                    </p>
                     {expiresAt && <CountdownTimer expiresAt={new Date(expiresAt).getTime()} />}
                 </div>
                 <div className="flex items-center gap-3">
