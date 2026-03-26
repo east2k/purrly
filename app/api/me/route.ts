@@ -12,8 +12,8 @@ export const GET = async () => {
 
     const user = await db.query.users.findFirst({
         where: eq(users.id, userId),
-        columns: { displayId: true },
+        columns: { displayId: true, onboardedAt: true },
     });
 
-    return NextResponse.json({ displayId: user?.displayId ?? null });
+    return NextResponse.json({ displayId: user?.displayId ?? null, onboardedAt: user?.onboardedAt ?? null });
 };

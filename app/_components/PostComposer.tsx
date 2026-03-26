@@ -150,7 +150,7 @@ const PostComposer = ({ onPost }: PostComposerProps) => {
                         title={m.label}
                         onClick={() => setMood(mood === m.emoji ? null : m.emoji)}
                         className={[
-                            "w-9 h-9 rounded-full border-2 text-lg flex items-center justify-center transition-all cursor-pointer",
+                            "w-10 h-10 rounded-full border-2 text-lg flex items-center justify-center transition-all cursor-pointer",
                             mood === m.emoji
                                 ? "border-terracotta-400 bg-terracotta-50 scale-[1.15]"
                                 : "border-transparent bg-sand-50 hover:border-sand-300 hover:scale-110",
@@ -161,7 +161,7 @@ const PostComposer = ({ onPost }: PostComposerProps) => {
                 ))}
                 <button
                     onClick={() => setShowAllMoods(!showAllMoods)}
-                    className="w-9 h-9 rounded-full border-2 border-transparent bg-sand-50 hover:border-sand-300 text-xs text-sand-500 flex items-center justify-center transition-all cursor-pointer"
+                    className="w-10 h-10 rounded-full border-2 border-transparent bg-sand-50 hover:border-sand-300 text-xs text-sand-500 flex items-center justify-center transition-all cursor-pointer"
                     title={showAllMoods ? "Show less" : "Show more"}
                 >
                     {showAllMoods ? "−" : "···"}

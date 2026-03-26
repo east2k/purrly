@@ -62,7 +62,7 @@ const VentPage = () => {
                     <select
                         value={language}
                         onChange={(e) => handleLanguageChange(e.target.value)}
-                        className="px-2.5 py-1 border border-sand-200 rounded-lg text-[11px] bg-white text-sand-600 outline-none focus:border-terracotta-400 transition-colors cursor-pointer font-body font-medium"
+                        className="px-2.5 py-1 border border-sand-200 rounded-lg text-base md:text-[11px] bg-white text-sand-600 outline-none focus:border-terracotta-400 transition-colors cursor-pointer font-body font-medium"
                     >
                         <option value="">Any language</option>
                         {LANGUAGE_OPTIONS.map((l) => (

@@ -39,14 +39,14 @@ const SelfCareCard = ({ config, value, onChange }: SelfCareCardProps) => {
                 <button
                     onClick={() => onChange(Math.max(0, value - 1))}
                     aria-label="Decrease"
-                    className="w-9 h-9 rounded-full border border-sand-300 bg-sand-50 text-sand-600 text-lg flex items-center justify-center transition-colors hover:border-terracotta-400 hover:text-terracotta-400 cursor-pointer"
+                    className="w-10 h-10 rounded-full border border-sand-300 bg-sand-50 text-sand-600 text-lg flex items-center justify-center transition-colors hover:border-terracotta-400 hover:text-terracotta-400 cursor-pointer"
                 >
                     −
                 </button>
                 <button
                     onClick={() => onChange(value + 1)}
                     aria-label="Increase"
-                    className="w-9 h-9 rounded-full bg-terracotta-400 border border-terracotta-400 text-white text-lg flex items-center justify-center transition-colors hover:bg-terracotta-500 cursor-pointer"
+                    className="w-10 h-10 rounded-full bg-terracotta-400 border border-terracotta-400 text-white text-lg flex items-center justify-center transition-colors hover:bg-terracotta-500 cursor-pointer"
                 >
                     +
                 </button>

@@ -104,7 +104,7 @@ const WhisperThread = ({ whisper, currentUserId, onBack }: WhisperThreadProps) =
                 </div>
             )}
 
-            <div ref={scrollRef} onScroll={handleScroll} className="h-[50vh] overflow-y-auto space-y-3 mb-4 pr-1">
+            <div ref={scrollRef} onScroll={handleScroll} className="h-[40vh] md:h-[50vh] overflow-y-auto space-y-3 mb-4 pr-1">
                 {loadingMore && <p className="text-center text-xs text-sand-400 py-2">Loading older messages...</p>}
                 {loadingMessages ? (
                     [false, true, false, true].map((isMine, i) => (

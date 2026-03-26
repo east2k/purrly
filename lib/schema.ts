@@ -25,6 +25,7 @@ export const reconnectStatusEnum = pgEnum("reconnect_status", ["PENDING", "ACCEP
 export const users = pgTable("users", {
     id: text("id").primaryKey(),
     displayId: text("display_id").notNull().unique(),
+    onboardedAt: timestamp("onboarded_at"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

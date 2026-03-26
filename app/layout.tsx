@@ -6,6 +6,8 @@ import TabNav from "@/app/_components/TabNav";
 import Footer from "@/app/_components/Footer";
 import UserMenu from "@/app/_components/UserMenu";
 import BugReportButton from "@/app/_components/BugReportButton";
+import AgeGate from "@/app/_components/AgeGate";
+import OnboardingModal from "@/app/_components/OnboardingModal";
 import { IdentityPreferenceProvider } from "@/app/_context/IdentityPreferenceContext";
 import "./globals.css";
 
@@ -23,7 +25,22 @@ const dmSans = DM_Sans({
 
 export const metadata: Metadata = {
     title: "Purrly - curl up. let it out. don't hold back.",
-    description: "A cozy, safe-space app to vent and track self-care.",
+    description: "A cozy, anonymous safe space to vent, connect with others, and track your self-care.",
+    metadataBase: new URL("https://purrly.app"),
+    openGraph: {
+        title: "Purrly — curl up. let it out. don't hold back.",
+        description: "A cozy, anonymous safe space to vent, connect with others, and track your self-care.",
+        url: "https://purrly.app",
+        siteName: "Purrly",
+        images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Purrly" }],
+        type: "website",
+    },
+    twitter: {
+        card: "summary_large_image",
+        title: "Purrly — curl up. let it out. don't hold back.",
+        description: "A cozy, anonymous safe space to vent, connect with others, and track your self-care.",
+        images: ["/og-image.png"],
+    },
 };
 
 const RootLayout = ({ children }: { children: React.ReactNode }) => (
@@ -35,7 +52,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => (
                     <header className="relative text-center py-8">
                         <div className="flex items-center justify-center gap-3 mb-1">
                             <Image src="/logo.png" alt="Purrly logo" width={48} height={48} priority />
-                            <h1 className="font-display font-bold text-[32px] tracking-tight text-sand-900">
+                            <h1 className="font-display font-bold text-2xl md:text-[32px] tracking-tight text-sand-900">
                                 purr<span className="text-terracotta-400">ly</span>
                             </h1>
                         </div>
@@ -59,6 +76,8 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => (
                     {children}
                     <Footer />
                 </div>
+                <AgeGate />
+                <OnboardingModal />
                 <BugReportButton />
                 </IdentityPreferenceProvider>
             </body>
