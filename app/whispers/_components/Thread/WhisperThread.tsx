@@ -22,7 +22,7 @@ const WhisperThread = ({ whisper, currentUserId, onBack }: WhisperThreadProps) =
         messages, loadingMessages, threadExpired, loadingMore,
         messageText, setMessageText, extensionStatus, expiresAt,
         reportedById, messagingAllowed, reportPrompt, setReportPrompt,
-        actioning, otherDisplayId, iReported, iWasReported, messagingBlocked,
+        actioning, otherDisplayId, showOtherId, iReported, iWasReported, messagingBlocked,
         iExtended, callAction, handleSend, handleReport, handleToggleMessaging, loadMore,
     } = useWhisperThread(whisper, currentUserId);
 
@@ -72,7 +72,12 @@ const WhisperThread = ({ whisper, currentUserId, onBack }: WhisperThreadProps) =
                     <ArrowLeft size={20} />
                 </button>
                 <div className="flex-1">
-                    <p className="text-sm font-semibold text-sand-900">Purrlynonymous-{otherDisplayId}</p>
+                    <p className="text-sm font-semibold text-sand-900">
+                        Purrlynonymous{showOtherId && otherDisplayId ? `-${otherDisplayId}` : ""}
+                    </p>
+                    <span className="text-[10px] text-sand-400">
+                        Started {new Date(whisper.createdAt).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" })}
+                    </span>
                     {expiresAt && <CountdownTimer expiresAt={new Date(expiresAt).getTime()} />}
                 </div>
                 <div className="flex items-center gap-3">

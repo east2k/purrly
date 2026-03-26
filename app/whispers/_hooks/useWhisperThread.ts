@@ -28,6 +28,9 @@ const useWhisperThread = (whisper: ApiWhisper, currentUserId: string) => {
             ? whisper.participantTwo.displayId
             : whisper.participantOne.displayId;
 
+    const otherIsRequester = whisper.requestedById !== currentUserId;
+    const showOtherId = otherIsRequester ? whisper.requestedByRevealId : true;
+
     const iReported = reportedById === currentUserId;
     const iWasReported = reportedById !== null && reportedById !== currentUserId;
     const messagingBlocked = reportedById !== null && !messagingAllowed;
@@ -152,6 +155,7 @@ const useWhisperThread = (whisper: ApiWhisper, currentUserId: string) => {
         setReportPrompt,
         actioning,
         otherDisplayId,
+        showOtherId,
         iReported,
         iWasReported,
         messagingBlocked,
