@@ -58,7 +58,7 @@ export const PUT = async (request: NextRequest, { params }: RouteParams) => {
             }
             const [updated] = await db
                 .update(whispers)
-                .set({ status: "EXPIRED", updatedAt: new Date() })
+                .set({ status: "DECLINED", updatedAt: new Date() })
                 .where(eq(whispers.id, whisperId))
                 .returning();
             return NextResponse.json(updated);

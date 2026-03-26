@@ -40,7 +40,7 @@ export const POST = async (request: NextRequest) => {
         return NextResponse.json({ error: "Invalid whisper target." }, { status: 400 });
     }
 
-    await ensureUser(userId);
+    await Promise.all([ensureUser(userId), ensureUser(targetUserId)]);
 
     const existingWhisper = await db.query.whispers.findFirst({
         where: and(
@@ -48,12 +48,17 @@ export const POST = async (request: NextRequest) => {
                 and(eq(whispers.participantOneId, userId), eq(whispers.participantTwoId, targetUserId)),
                 and(eq(whispers.participantOneId, targetUserId), eq(whispers.participantTwoId, userId)),
             ),
-            or(eq(whispers.status, "PENDING"), eq(whispers.status, "ACTIVE")),
+            or(eq(whispers.status, "PENDING"), eq(whispers.status, "ACTIVE"), eq(whispers.status, "DECLINED")),
         ),
     });
 
     if (existingWhisper) {
-        return NextResponse.json({ error: "You already have an active whisper with this person." }, { status: 409 });
+        const message = existingWhisper.status === "PENDING"
+            ? "You have already requested a whisper with this person."
+            : existingWhisper.status === "DECLINED"
+                ? "This person has already declined your whisper request."
+                : "You already have an active whisper with this person.";
+        return NextResponse.json({ error: message }, { status: 409 });
     }
 
     const [newWhisper] = await db

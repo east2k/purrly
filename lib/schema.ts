@@ -14,7 +14,7 @@ import { relations } from "drizzle-orm";
 // ── Enums ──
 
 export const reactionTypeEnum = pgEnum("reaction_type", ["HUG", "ME_TOO"]);
-export const whisperStatusEnum = pgEnum("whisper_status", ["PENDING", "ACTIVE", "EXPIRED"]);
+export const whisperStatusEnum = pgEnum("whisper_status", ["PENDING", "ACTIVE", "EXPIRED", "DECLINED"]);
 export const extensionStatusEnum = pgEnum("extension_status", ["PENDING", "ACCEPTED", "DECLINED"]);
 export const reportContentTypeEnum = pgEnum("report_content_type", ["POST", "COMMENT", "WHISPER_MESSAGE"]);
 export const reportStatusEnum = pgEnum("report_status", ["PENDING", "REVIEWED", "ACTIONED"]);

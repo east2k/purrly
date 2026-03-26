@@ -54,7 +54,7 @@ const PostCard = ({ post, animationDelay = "0s", onHide, onUnhide }: PostCardPro
             body: JSON.stringify({ targetUserId, revealId }),
         });
         if (!res.ok) {
-            const err = await res.json();
+            const err = await res.json().catch(() => ({})) as { error?: string };
             setWhisperError(err.error ?? "Something went wrong. Take a breath, we'll try again.");
             return;
         }
