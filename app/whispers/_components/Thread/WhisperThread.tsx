@@ -81,7 +81,7 @@ const WhisperThread = ({ whisper, currentUserId, onBack }: WhisperThreadProps) =
                     {expiresAt && <CountdownTimer expiresAt={new Date(expiresAt).getTime()} />}
                 </div>
                 <div className="flex items-center gap-3">
-                    {iReported && (
+                    {iReported && !threadExpired && (
                         <button onClick={handleToggleMessaging} disabled={actioning}
                             className={["text-xs transition-colors cursor-pointer font-body disabled:opacity-50", messagingAllowed ? "text-sand-400 hover:text-sand-600" : "text-terracotta-400 hover:text-terracotta-500"].join(" ")}>
                             {messagingAllowed ? "Disable messaging" : "Allow messaging"}

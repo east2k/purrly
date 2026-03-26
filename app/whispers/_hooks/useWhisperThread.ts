@@ -118,8 +118,7 @@ const useWhisperThread = (whisper: ApiWhisper, currentUserId: string) => {
     };
 
     const handleToggleMessaging = async () => {
-        const ok = await callAction("toggle-messaging");
-        if (ok) setMessagingAllowed((prev) => !prev);
+        await callAction("toggle-messaging");
     };
 
     const loadMore = async (scrollEl: HTMLDivElement | null) => {
