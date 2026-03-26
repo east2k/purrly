@@ -5,6 +5,7 @@ import Image from "next/image";
 import TabNav from "@/app/_components/TabNav";
 import Footer from "@/app/_components/Footer";
 import UserMenu from "@/app/_components/UserMenu";
+import BugReportButton from "@/app/_components/BugReportButton";
 import { IdentityPreferenceProvider } from "@/app/_context/IdentityPreferenceContext";
 import "./globals.css";
 
@@ -58,6 +59,7 @@ const RootLayout = ({ children }: { children: React.ReactNode }) => (
                     {children}
                     <Footer />
                 </div>
+                <BugReportButton />
                 </IdentityPreferenceProvider>
             </body>
         </html>

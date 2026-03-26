@@ -210,6 +210,16 @@ export const anonRateLimits = pgTable("anon_rate_limits", {
     uniqueIndex("anon_rate_limits_ip_date_idx").on(table.ip, table.date),
 ]);
 
+// ── Bug Reports ──
+
+export const bugReports = pgTable("bug_reports", {
+    id: serial("id").primaryKey(),
+    category: text("category").notNull(),
+    description: text("description").notNull(),
+    userId: text("user_id").references(() => users.id),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // ── Reports ──
 
 export const reports = pgTable("reports", {
