@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Terms of Service — Purrly",
+    title: "Terms of Service - Purrly",
     description: "The terms and conditions for using Purrly.",
 };
 

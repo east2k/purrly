@@ -8,12 +8,12 @@ const STEPS = [
     {
         icon: <Wind size={28} className="text-terracotta-400" />,
         title: "Vent freely",
-        body: "Post anonymously as Purrlynonymous. No judgement, no names — just honesty.",
+        body: "Post anonymously as Purrlynonymous. No judgement, no names - just honesty.",
     },
     {
         icon: <MessageCircle size={28} className="text-terracotta-400" />,
         title: "Whisper with someone",
-        body: "Connect privately with someone who gets it. Conversations last 48 hours — just enough, not too much.",
+        body: "Connect privately with someone who gets it. Conversations last 48 hours - just enough, not too much.",
     },
     {
         icon: <Heart size={28} className="text-terracotta-400" />,

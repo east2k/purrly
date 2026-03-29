@@ -257,7 +257,7 @@ const PostCard = ({ post, animationDelay = "0s", onHide, onUnhide }: PostCardPro
                             </button>
                         </div>
                     ) : (
-                        <SignupNudge message="Sign up to join the conversation — it takes 5 seconds 🐱" />
+                        <SignupNudge message="Sign up to join the conversation - it takes 5 seconds 🐱" />
                     )}
                 </div>
             )}

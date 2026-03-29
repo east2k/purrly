@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     description: "A cozy, anonymous safe space to vent, connect with others, and track your self-care.",
     metadataBase: new URL("https://purrly.app"),
     openGraph: {
-        title: "Purrly — curl up. let it out. don't hold back.",
+        title: "Purrly - curl up. let it out. don't hold back.",
         description: "A cozy, anonymous safe space to vent, connect with others, and track your self-care.",
         url: "https://purrly.app",
         siteName: "Purrly",
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     },
     twitter: {
         card: "summary_large_image",
-        title: "Purrly — curl up. let it out. don't hold back.",
+        title: "Purrly - curl up. let it out. don't hold back.",
         description: "A cozy, anonymous safe space to vent, connect with others, and track your self-care.",
         images: ["/og-image.png"],
     },

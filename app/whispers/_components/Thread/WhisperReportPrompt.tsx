@@ -16,14 +16,14 @@ const WhisperReportPrompt = ({ actioning, onReport, onCancel }: WhisperReportPro
                 disabled={actioning}
                 className="w-full py-2 text-xs font-medium text-sand-700 bg-white border border-sand-200 rounded-lg hover:border-sand-300 transition-colors cursor-pointer disabled:opacity-50"
             >
-                {actioning ? "Reporting..." : "Report — Allow messaging"}
+                {actioning ? "Reporting..." : "Report - Allow messaging"}
             </button>
             <button
                 onClick={() => onReport(false)}
                 disabled={actioning}
                 className="w-full py-2 text-xs font-medium text-white bg-terracotta-400 rounded-lg hover:bg-terracotta-500 transition-colors cursor-pointer disabled:opacity-50"
             >
-                {actioning ? "Reporting..." : "Report — Disable messaging"}
+                {actioning ? "Reporting..." : "Report - Disable messaging"}
             </button>
             <button
                 onClick={onCancel}

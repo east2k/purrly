@@ -46,7 +46,7 @@ const CarePage = () => {
                             ? `You've checked in ${streak} days in a row 🐱`
                             : streak === 1
                                 ? "You checked in today 🐱"
-                                : "Start your streak — check in today 🐱"}
+                                : "Start your streak - check in today 🐱"}
                     </p>
                 </div>
             )}

@@ -8,7 +8,7 @@ import { MOOD_OPTIONS, MAX_UNSIGNED_POSTS_PER_DAY, LANGUAGE_OPTIONS } from "@/ap
 import { useIdentityPreference } from "@/app/_context/IdentityPreferenceContext";
 
 const POSTING_RULES = [
-    "No doxxing — never share personal info about others without their consent.",
+    "No doxxing - never share personal info about others without their consent.",
     "No malicious or spam links.",
     "No hate speech, slurs, or discrimination of any kind.",
     "No harassment or targeted attacks against specific people.",
@@ -94,14 +94,14 @@ const PostComposer = ({ onPost }: PostComposerProps) => {
                     onClick={() => setRulesOpen(!rulesOpen)}
                     className="w-full flex items-center justify-between px-4 py-2.5 bg-sand-50 text-xs font-medium text-sand-700 hover:bg-sand-100 transition-colors cursor-pointer"
                 >
-                    <span>Before you post — community guidelines</span>
+                    <span>Before you post - community guidelines</span>
                     {rulesOpen ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                 </button>
                 {rulesOpen && (
                     <ul className="px-4 py-3 space-y-2 bg-white">
                         {POSTING_RULES.map((rule, i) => (
                             <li key={i} className="flex gap-2 text-xs text-sand-600 leading-relaxed">
-                                <span className="text-terracotta-400 shrink-0 mt-px">—</span>
+                                <span className="text-terracotta-400 shrink-0 mt-px">-</span>
                                 <span>
                                     {rule}
                                     {rule.includes("self-harm") && (
@@ -126,7 +126,7 @@ const PostComposer = ({ onPost }: PostComposerProps) => {
                             : "border-sand-300 text-sand-800 focus:border-terracotta-400",
                     ].join(" ")}
                 >
-                    <option value="" disabled>Select a language — required</option>
+                    <option value="" disabled>Select a language - required</option>
                     {LANGUAGE_OPTIONS.map((l) => (
                         <option key={l.code} value={l.code}>{l.label}</option>
                     ))}
@@ -168,31 +168,32 @@ const PostComposer = ({ onPost }: PostComposerProps) => {
                 </button>
             </div>
 
-            <div className="flex justify-between items-center mt-4 flex-wrap gap-3">
-                <div className="flex items-center gap-4">
-                    <label className="flex items-center gap-1.5 text-xs text-sand-600 cursor-pointer">
-                        <input
-                            type="checkbox"
-                            checked={commentsEnabled}
-                            onChange={() => setCommentsEnabled(!commentsEnabled)}
-                            className="accent-terracotta-400 w-3.75 h-3.75"
-                        />
-                        Allow comments
-                    </label>
-                    <label className="flex items-center gap-1.5 text-xs text-sand-600 cursor-pointer">
-                        <input
-                            type="checkbox"
-                            checked={agreedToRules}
-                            onChange={() => setAgreedToRules(!agreedToRules)}
-                            className="accent-terracotta-400 w-3.75 h-3.75"
-                        />
-                        I agree to the community guidelines
-                    </label>
-                </div>
+            <div className="flex justify-between items-center mt-4">
+                <label className="flex items-center gap-1.5 text-xs text-sand-600 cursor-pointer">
+                    <input
+                        type="checkbox"
+                        checked={commentsEnabled}
+                        onChange={() => setCommentsEnabled(!commentsEnabled)}
+                        className="accent-terracotta-400 w-3.75 h-3.75"
+                    />
+                    Allow comments
+                </label>
+            </div>
+
+            <div className="flex items-center justify-between mt-3 gap-3">
+                <label className="flex items-center gap-1.5 text-xs text-sand-600 cursor-pointer">
+                    <input
+                        type="checkbox"
+                        checked={agreedToRules}
+                        onChange={() => setAgreedToRules(!agreedToRules)}
+                        className="accent-terracotta-400 w-3.75 h-3.75"
+                    />
+                    I agree to the community guidelines
+                </label>
                 <button
                     onClick={handleSubmit}
                     disabled={!text.trim() || !language || isRateLimited || !agreedToRules}
-                    className="px-7 py-2.5 bg-terracotta-400 text-white text-sm font-semibold rounded-[10px] disabled:opacity-45 hover:bg-terracotta-500 hover:-translate-y-px transition-all cursor-pointer font-body"
+                    className="px-7 py-2.5 bg-terracotta-400 text-white text-sm font-semibold rounded-[10px] disabled:opacity-45 hover:bg-terracotta-500 hover:-translate-y-px transition-all cursor-pointer font-body shrink-0"
                 >
                     Post
                 </button>

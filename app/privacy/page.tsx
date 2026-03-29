@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Privacy Policy — Purrly",
+    title: "Privacy Policy - Purrly",
     description: "How Purrly collects, uses, and protects your information.",
 };
 
@@ -26,11 +26,11 @@ const PrivacyPage = () => (
             <section>
                 <h3 className="font-semibold text-sand-900 mb-2">2. Information we collect</h3>
                 <ul className="space-y-2 list-disc list-inside text-sand-600">
-                    <li><span className="text-sand-700 font-medium">Account information</span> — when you sign in via Clerk, we receive your email address and a unique user ID.</li>
-                    <li><span className="text-sand-700 font-medium">Posts and comments</span> — content you submit, including mood, language, and whether your identity is hidden.</li>
-                    <li><span className="text-sand-700 font-medium">Whisper messages</span> — private messages between users are stored to enable the chat feature.</li>
-                    <li><span className="text-sand-700 font-medium">Reactions and reports</span> — hugs, report actions, and content flags you submit.</li>
-                    <li><span className="text-sand-700 font-medium">IP address</span> — collected temporarily for anonymous rate limiting. Not linked to your account.</li>
+                    <li><span className="text-sand-700 font-medium">Account information</span> - when you sign in via Clerk, we receive your email address and a unique user ID.</li>
+                    <li><span className="text-sand-700 font-medium">Posts and comments</span> - content you submit, including mood, language, and whether your identity is hidden.</li>
+                    <li><span className="text-sand-700 font-medium">Whisper messages</span> - private messages between users are stored to enable the chat feature.</li>
+                    <li><span className="text-sand-700 font-medium">Reactions and reports</span> - hugs, report actions, and content flags you submit.</li>
+                    <li><span className="text-sand-700 font-medium">IP address</span> - collected temporarily for anonymous rate limiting. Not linked to your account.</li>
                 </ul>
             </section>
 
@@ -51,10 +51,10 @@ const PrivacyPage = () => (
                     necessary to operate Purrly:
                 </p>
                 <ul className="space-y-2 list-disc list-inside text-sand-600 mt-2">
-                    <li><span className="font-medium text-sand-700">Clerk</span> — authentication and account management</li>
-                    <li><span className="font-medium text-sand-700">Neon</span> — database hosting</li>
-                    <li><span className="font-medium text-sand-700">Pusher</span> — real-time messaging</li>
-                    <li><span className="font-medium text-sand-700">Vercel</span> — application hosting</li>
+                    <li><span className="font-medium text-sand-700">Clerk</span> - authentication and account management</li>
+                    <li><span className="font-medium text-sand-700">Neon</span> - database hosting</li>
+                    <li><span className="font-medium text-sand-700">Pusher</span> - real-time messaging</li>
+                    <li><span className="font-medium text-sand-700">Vercel</span> - application hosting</li>
                 </ul>
             </section>
 

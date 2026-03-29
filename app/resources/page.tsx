@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-    title: "Crisis Resources — Purrly",
+    title: "Crisis Resources - Purrly",
     description: "If you or someone you know is struggling, these crisis lines and resources are here to help.",
 };
 
