@@ -3,6 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { dailyCheckIns } from "@/lib/schema";
 import { eq, and, desc, sql } from "drizzle-orm";
+import { ensureUser } from "@/lib/ensureUser";
 
 const getTodayDate = () => new Date().toISOString().split("T")[0];
 
@@ -48,6 +49,8 @@ export const PUT = async (request: NextRequest) => {
     if (!userId) {
         return NextResponse.json({ error: "Sign in to track self-care." }, { status: 401 });
     }
+
+    await ensureUser(userId);
 
     const body = await request.json();
     const { water, sleep } = body as { water?: number; sleep?: number };

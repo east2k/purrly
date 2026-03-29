@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { whisperMessages, whispers, users } from "@/lib/schema";
 import { eq, or, and, desc, lt } from "drizzle-orm";
 import { pusherServer } from "@/lib/pusher";
+import { ensureUser } from "@/lib/ensureUser";
 
 type RouteParams = { params: Promise<{ id: string }> };
 
@@ -57,6 +58,8 @@ export const POST = async (request: NextRequest, { params }: RouteParams) => {
     if (!userId) {
         return NextResponse.json({ error: "Sign in required." }, { status: 401 });
     }
+
+    await ensureUser(userId);
 
     const { id } = await params;
     const whisperId = Number(id);

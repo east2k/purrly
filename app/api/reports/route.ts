@@ -3,6 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { reports } from "@/lib/schema";
 import { and, eq } from "drizzle-orm";
+import { ensureUser } from "@/lib/ensureUser";
 
 export const POST = async (request: NextRequest) => {
     const { userId } = await auth();
@@ -17,6 +18,8 @@ export const POST = async (request: NextRequest) => {
     if (!contentType || !contentId || !reason?.trim()) {
         return NextResponse.json({ error: "All fields are required." }, { status: 400 });
     }
+
+    if (userId) await ensureUser(userId);
 
     if (userId) {
         const existing = await db.query.reports.findFirst({

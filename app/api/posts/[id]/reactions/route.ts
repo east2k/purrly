@@ -3,6 +3,7 @@ import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
 import { reactions } from "@/lib/schema";
 import { eq, and } from "drizzle-orm";
+import { ensureUser } from "@/lib/ensureUser";
 
 type RouteParams = { params: Promise<{ id: string }> };
 
@@ -12,6 +13,8 @@ export const POST = async (_request: NextRequest, { params }: RouteParams) => {
     if (!userId) {
         return NextResponse.json({ error: "Sign in to send hugs." }, { status: 401 });
     }
+
+    await ensureUser(userId);
 
     const { id } = await params;
     const postId = Number(id);
