@@ -7,6 +7,8 @@ import { ensureUser } from "@/lib/ensureUser";
 
 export const POST = async (request: NextRequest) => {
     const { userId } = await auth();
+    if (!userId) return NextResponse.json({ error: "Sign in to report content." }, { status: 401 });
+
     const body = await request.json();
 
     const { contentType, contentId, reason } = body as {
@@ -19,26 +21,24 @@ export const POST = async (request: NextRequest) => {
         return NextResponse.json({ error: "All fields are required." }, { status: 400 });
     }
 
-    if (userId) await ensureUser(userId);
+    await ensureUser(userId);
 
-    if (userId) {
-        const existing = await db.query.reports.findFirst({
-            where: and(
-                eq(reports.reporterId, userId),
-                eq(reports.contentType, contentType),
-                eq(reports.contentId, contentId),
-            ),
-            columns: { id: true },
-        });
-        if (existing) {
-            return NextResponse.json({ error: "Already reported." }, { status: 409 });
-        }
+    const existing = await db.query.reports.findFirst({
+        where: and(
+            eq(reports.reporterId, userId),
+            eq(reports.contentType, contentType),
+            eq(reports.contentId, contentId),
+        ),
+        columns: { id: true },
+    });
+    if (existing) {
+        return NextResponse.json({ error: "Already reported." }, { status: 409 });
     }
 
     const [report] = await db
         .insert(reports)
         .values({
-            reporterId: userId ?? null,
+            reporterId: userId,
             contentType,
             contentId,
             reason: reason.trim(),

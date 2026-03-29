@@ -19,7 +19,7 @@ export const GET = async (_request: NextRequest, { params }: RouteParams) => {
             authorDisplayId: users.displayId,
             hideIdentity: comments.hideIdentity,
             createdAt: comments.createdAt,
-            reportCount: sql<number>`(SELECT count(*) FROM reports WHERE reports.content_type = 'COMMENT' AND reports.content_id = ${comments.id})`,
+            reportCount: sql<number>`(SELECT count(*) FROM reports WHERE reports.content_type = 'COMMENT' AND reports.content_id = ${comments.id} AND reports.reporter_id IS NOT NULL)`,
         })
         .from(comments)
         .leftJoin(users, eq(comments.authorId, users.id))

@@ -46,7 +46,7 @@ export const GET = async (request: NextRequest) => {
                 ? sql<boolean>`EXISTS (SELECT 1 FROM reactions WHERE reactions.post_id = ${posts.id} AND reactions.type = 'HUG' AND reactions.author_id = ${userId})`
                 : sql<boolean>`false`,
             commentCount: sql<number>`(SELECT count(*) FROM comments WHERE comments.post_id = ${posts.id} AND comments.deleted_at IS NULL)`,
-            reportCount: sql<number>`(SELECT count(*) FROM reports WHERE reports.content_type = 'POST' AND reports.content_id = ${posts.id})`,
+            reportCount: sql<number>`(SELECT count(*) FROM reports WHERE reports.content_type = 'POST' AND reports.content_id = ${posts.id} AND reports.reporter_id IS NOT NULL)`,
             deletedAt: posts.deletedAt,
         })
         .from(posts)
