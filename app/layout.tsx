@@ -32,14 +32,12 @@ export const metadata: Metadata = {
         description: "A cozy, anonymous safe space to vent, connect with others, and track your self-care.",
         url: "https://purrly.app",
         siteName: "Purrly",
-        images: [{ url: "/og-image.png", width: 1200, height: 630, alt: "Purrly" }],
         type: "website",
     },
     twitter: {
         card: "summary_large_image",
         title: "Purrly - curl up. let it out. don't hold back.",
         description: "A cozy, anonymous safe space to vent, connect with others, and track your self-care.",
-        images: ["/og-image.png"],
     },
 };
 
